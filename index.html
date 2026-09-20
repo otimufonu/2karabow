@@ -23,6 +23,7 @@
       --accent-yellow: #ffc107;
       --accent-gold: #ffd700;
       --accent-cyan: #00e5ff;
+      --accent-orange: #ff9800;
       --text-main: #ffffff;
       --text-sub: #a0a8b8;
       --border-color: #2a3142;
@@ -136,6 +137,7 @@
     .btn-danger { background: #8b0000; border-color: var(--accent-red); }
     .btn-primary { background: #0055b8; border-color: var(--open-color); }
     .btn-success { background: #1b7a3e; border-color: var(--spare-color); }
+    .btn-warning { background: #b75300; border-color: var(--accent-orange); }
 
     /* ==========================================
        3. メインコンテンツ (横画面デフォルト)
@@ -282,7 +284,7 @@
       display: flex;
       flex-direction: column;
       padding: 8px;
-      gap: 8px;
+      gap: 6px;
     }
 
     .roulette-title {
@@ -295,6 +297,7 @@
     /* 縦回転リール */
     .reel-window {
       flex: 1;
+      min-height: 40px;
       background: #000;
       border: 2px solid var(--accent-red);
       border-radius: 6px;
@@ -343,10 +346,10 @@
       background: linear-gradient(135deg, #ff2a5f 0%, #b3002d 100%);
       color: white;
       border: none;
-      padding: 10px;
+      padding: 8px;
       border-radius: 6px;
       font-weight: 900;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       cursor: pointer;
       box-shadow: 0 3px 0 #7a001e;
     }
@@ -354,6 +357,23 @@
     .roulette-btn:active {
       transform: translateY(2px);
       box-shadow: 0 1px 0 #7a001e;
+    }
+
+    .reroll-btn {
+      background: linear-gradient(135deg, #ff9800 0%, #b56a00 100%);
+      color: white;
+      border: none;
+      padding: 7px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.82rem;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #734300;
+    }
+
+    .reroll-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #734300;
     }
 
     /* ==========================================
@@ -388,7 +408,7 @@
       /* 左右2列から上下2段に変更 */
       main {
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr 180px; /* 上:スコア表(可変), 下:ルーレット(180px) */
+        grid-template-rows: 1fr 210px; /* 上:スコア表(可変), 下:ルーレット(210px) */
         gap: 6px;
         padding: 6px;
       }
@@ -412,8 +432,13 @@
       }
 
       .roulette-btn {
-        padding: 8px;
+        padding: 7px;
         font-size: 0.82rem;
+      }
+
+      .reroll-btn {
+        padding: 6px;
+        font-size: 0.78rem;
       }
     }
 
@@ -591,6 +616,7 @@
         </div>
       </div>
       <button class="roulette-btn" onclick="spinRoulette()">ルーレットを回す</button>
+      <button class="reroll-btn" onclick="openRerollModal()">引き直し</button>
     </section>
   </main>
 </div>
@@ -610,12 +636,12 @@
       </div>
       <div class="num-input-grid">
         <div class="form-group">
-          <label>素点 (例: 92.541):</label>
-          <input type="number" step="0.001" id="input-raw-score" class="form-control" placeholder="90.000">
+          <label>素点 (例: 92):</label>
+          <input type="number" step="1" id="input-raw-score" class="form-control" placeholder="90">
         </div>
         <div class="form-group">
-          <label>全国平均 (例: 85.320):</label>
-          <input type="number" step="0.001" id="input-avg-score" class="form-control" placeholder="85.000">
+          <label>全国平均 (例: 85):</label>
+          <input type="number" step="1" id="input-avg-score" class="form-control" placeholder="85">
         </div>
       </div>
     </div>
@@ -648,22 +674,44 @@
       <div style="font-weight: bold; color: var(--accent-cyan); margin-top:4px;">ルール詳細設定</div>
       <div class="form-group">
         <label>スペア判定差 (素点-平均 ≧ X):</label>
-        <input type="number" step="0.1" id="setting-spare-diff" class="form-control">
+        <input type="number" step="1" id="setting-spare-diff" class="form-control">
       </div>
       <div class="num-input-grid">
         <div class="form-group">
           <label>最終ストライク倍率:</label>
-          <input type="number" step="0.1" id="setting-final-strike" class="form-control">
+          <input type="number" step="1" id="setting-final-strike" class="form-control">
         </div>
         <div class="form-group">
           <label>最終スペア倍率:</label>
-          <input type="number" step="0.1" id="setting-final-spare" class="form-control">
+          <input type="number" step="1" id="setting-final-spare" class="form-control">
         </div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal('settings-modal')">キャンセル</button>
       <button class="btn btn-primary" onclick="saveSettings()">保存して戻る</button>
+    </div>
+  </div>
+</div>
+
+<div id="reroll-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>🎰 ルーレット引き直し確認</span>
+      <span style="cursor:pointer;" onclick="closeModal('reroll-modal')">✕</span>
+    </div>
+    <div class="modal-body">
+      <div style="font-weight: bold; color: var(--accent-yellow); font-size: 0.95rem;">
+        引き直すと -2ポイントになりますがよろしいですか？
+      </div>
+      <div class="form-group" style="margin-top: 8px;">
+        <label>引き直すチームを選択してください:</label>
+        <select id="reroll-team-select" class="form-control"></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('reroll-modal')">キャンセル</button>
+      <button class="btn btn-warning" onclick="executeReroll()">OK</button>
     </div>
   </div>
 </div>
@@ -720,11 +768,12 @@
       teamCount: 2,
       songCount: 5,
       teamNames: ["チームA", "チームB"],
-      spareDiff: 6.0,
-      finalStrikeBonus: 2.0,
-      finalSpareBonus: 1.5
+      spareDiff: 6,
+      finalStrikeBonus: 2,
+      finalSpareBonus: 2
     },
     scores: [],
+    rerollPenalties: [0, 0],
     currentCondition: "（条件未選択）",
     activeCell: { teamIdx: 0, songIdx: 0 },
     isFinished: false
@@ -764,6 +813,14 @@
     } else {
       initEmptyScores();
     }
+    ensureRerollPenalties();
+  }
+
+  function ensureRerollPenalties() {
+    const count = (gameState.settings && gameState.settings.teamCount) ? gameState.settings.teamCount : 2;
+    if (!Array.isArray(gameState.rerollPenalties) || gameState.rerollPenalties.length !== count) {
+      gameState.rerollPenalties = Array(count).fill(0);
+    }
   }
 
   function saveState() {
@@ -775,6 +832,7 @@
     gameState.scores = Array.from({ length: teamCount }, () =>
       Array.from({ length: songCount }, () => null)
     );
+    gameState.rerollPenalties = Array(teamCount).fill(0);
     gameState.activeCell = { teamIdx: 0, songIdx: 0 };
     gameState.isFinished = false;
   }
@@ -785,7 +843,7 @@
 
     const { rawScore, avgScore } = frameData;
     const diff = rawScore - avgScore;
-    const isStrike = rawScore >= 90.0;
+    const isStrike = rawScore >= 90;
     const isSpare = !isStrike && (diff >= gameState.settings.spareDiff);
 
     const isLastSong = (songIdx === gameState.settings.songCount - 1);
@@ -828,7 +886,7 @@
     }
 
     const subtotal = isWaiting ? baseScore : (baseScore + bonus);
-    const displayDiff = diff <= 0 ? "G" : (diff > 0 ? `+${diff.toFixed(2)}` : diff.toFixed(2));
+    const displayDiff = diff <= 0 ? "G" : `+${Math.round(diff)}`;
 
     return {
       rawScore, avgScore, diff, displayDiff,
@@ -870,6 +928,7 @@
   }
 
   function renderScoreTable() {
+    ensureRerollPenalties();
     const { teamCount, songCount, teamNames } = gameState.settings;
     const headerRow = document.getElementById("score-table-header");
     const tbody = document.getElementById("score-table-body");
@@ -917,11 +976,11 @@
           td.innerHTML = `
             <div class="frame-box" onclick="selectCell(${t}, ${s})">
               <div class="frame-top">
-                <span class="raw-score-val">${scoreData.rawScore.toFixed(1)}</span>
+                <span class="raw-score-val">${Math.round(scoreData.rawScore)}</span>
                 <span class="mark-val ${markClass}">${markText}</span>
               </div>
               <div class="frame-bottom">
-                ${res.isWaiting ? `<span class="waiting-text">次曲待ち</span>` : res.subtotal.toFixed(1)}
+                ${res.isWaiting ? `<span class="waiting-text">次曲待ち</span>` : Math.round(res.subtotal)}
               </div>
             </div>
           `;
@@ -941,7 +1000,9 @@
 
       const totalTd = document.createElement("td");
       totalTd.className = "total-score-cell";
-      totalTd.textContent = teamTotalScore.toFixed(1);
+      const penalty = gameState.rerollPenalties[t] || 0;
+      const finalTeamTotal = teamTotalScore + penalty;
+      totalTd.textContent = Math.round(finalTeamTotal);
       tr.appendChild(totalTd);
 
       tbody.appendChild(tr);
@@ -975,8 +1036,8 @@
 
     if (existing) {
       document.getElementById("input-song-title").value = existing.title || "";
-      document.getElementById("input-raw-score").value = existing.rawScore;
-      document.getElementById("input-avg-score").value = existing.avgScore;
+      document.getElementById("input-raw-score").value = Math.round(existing.rawScore);
+      document.getElementById("input-avg-score").value = Math.round(existing.avgScore);
       saveBtn.textContent = "更新";
     } else {
       document.getElementById("input-song-title").value = "";
@@ -1004,8 +1065,8 @@
     const conditionToSave = existing ? existing.condition : gameState.currentCondition;
 
     gameState.scores[teamIdx][songIdx] = {
-      rawScore: rawVal,
-      avgScore: avgVal,
+      rawScore: Math.round(rawVal),
+      avgScore: Math.round(avgVal),
       title: titleVal,
       condition: conditionToSave
     };
@@ -1030,7 +1091,8 @@
   }
 
   let isSpinning = false;
-  function spinRoulette() {
+
+  function runRouletteSpin(onComplete) {
     if (isSpinning) return;
     isSpinning = true;
 
@@ -1051,8 +1113,52 @@
         gameState.currentCondition = finalSelected;
         isSpinning = false;
         saveState();
+        renderApp();
+        if (onComplete) onComplete();
       }
     }, 80);
+  }
+
+  function spinRoulette() {
+    runRouletteSpin();
+  }
+
+  function openRerollModal() {
+    if (isSpinning) return;
+    ensureRerollPenalties();
+    const selectElem = document.getElementById("reroll-team-select");
+    selectElem.innerHTML = "";
+
+    const { teamCount, teamNames } = gameState.settings;
+    for (let t = 0; t < teamCount; t++) {
+      const opt = document.createElement("option");
+      opt.value = t;
+      opt.textContent = teamNames[t] || `チーム${t + 1}`;
+      if (t === gameState.activeCell.teamIdx) {
+        opt.selected = true;
+      }
+      selectElem.appendChild(opt);
+    }
+
+    openModal("reroll-modal");
+  }
+
+  function executeReroll() {
+    if (isSpinning) return;
+
+    const selectElem = document.getElementById("reroll-team-select");
+    const selectedTeamIdx = parseInt(selectElem.value, 10);
+
+    ensureRerollPenalties();
+
+    // 1. 選択されたチームに引き直しペナルティとして -2ポイントを加算する
+    gameState.rerollPenalties[selectedTeamIdx] = (gameState.rerollPenalties[selectedTeamIdx] || 0) - 2;
+
+    // 2. モーダルを閉じる
+    closeModal("reroll-modal");
+
+    // 3~6. ルーレットを自動的にもう一度回し、新条件の決定・保存を行う
+    runRouletteSpin();
   }
 
   function openSettingsModal() {
@@ -1138,6 +1244,7 @@
       }
     }
 
+    ensureRerollPenalties();
     saveState();
     closeModal("settings-modal");
     renderApp();
@@ -1152,6 +1259,7 @@
   }
 
   function openBreakdownModal() {
+    ensureRerollPenalties();
     const container = document.getElementById("breakdown-body");
     const { teamCount, songCount, teamNames } = gameState.settings;
 
@@ -1198,13 +1306,13 @@
                 <div><b>${data.title || "（曲名未入力）"}</b></div>
                 <div style="font-size:0.65rem; color:var(--text-sub);">${data.condition}</div>
               </td>
-              <td>${res.rawScore.toFixed(1)}</td>
-              <td>${res.avgScore.toFixed(1)}</td>
+              <td>${Math.round(res.rawScore)}</td>
+              <td>${Math.round(res.avgScore)}</td>
               <td>${res.displayDiff}</td>
               <td>${res.mark}</td>
-              <td>${res.baseScore.toFixed(1)}</td>
-              <td>${res.isWaiting ? "次曲待ち" : res.bonus.toFixed(1)}</td>
-              <td><b>${res.isWaiting ? res.baseScore.toFixed(1) : res.subtotal.toFixed(1)}</b></td>
+              <td>${Math.round(res.baseScore)}</td>
+              <td>${res.isWaiting ? "次曲待ち" : Math.round(res.bonus)}</td>
+              <td><b>${res.isWaiting ? Math.round(res.baseScore) : Math.round(res.subtotal)}</b></td>
             </tr>
           `;
         } else {
@@ -1218,15 +1326,24 @@
         }
       }
 
-      const avgRaw = filledSongs > 0 ? (totalRaw / filledSongs).toFixed(2) : "-";
+      // 素点平均のみ平均点なので小数点以下を表示を残す
+      const avgRaw = filledSongs > 0 ? (totalRaw / filledSongs).toFixed(1) : "-";
+      const penalty = gameState.rerollPenalties[t] || 0;
+      const teamFinalTotalWithPenalty = teamFinalTotal + penalty;
 
       html += `
           </tbody>
         </table>
-        <div style="display:flex; justify-content:space-between; font-size:0.75rem; background:#11141c; padding:4px 8px; border-radius:4px; margin-top:4px;">
-          <span>素点合計: <b>${totalRaw.toFixed(1)}</b></span>
-          <span>素点平均: <b>${avgRaw}</b></span>
-          <span>最終計算点: <b style="color:var(--accent-cyan);">${teamFinalTotal.toFixed(1)}</b></span>
+        <div style="display:flex; flex-direction:column; gap:4px; font-size:0.75rem; background:#11141c; padding:6px 8px; border-radius:4px; margin-top:4px;">
+          <div style="display:flex; justify-content:space-between;">
+            <span>素点合計: <b>${Math.round(totalRaw)}点</b></span>
+            <span>素点平均: <b>${avgRaw}点</b></span>
+            <span>曲計算点合計: <b>${Math.round(teamFinalTotal)}点</b></span>
+          </div>
+          <div style="display:flex; justify-content:space-between; border-top:1px dashed #2a3142; padding-top:4px; margin-top:2px;">
+            <span>引き直しペナルティ: <b style="color:var(--accent-orange);">${penalty}点</b></span>
+            <span>最終計算点: <b style="color:var(--accent-cyan); font-size:0.85rem;">${Math.round(teamFinalTotalWithPenalty)}点</b></span>
+          </div>
         </div>
       `;
     }
@@ -1251,6 +1368,7 @@
   }
 
   function openResultModal() {
+    ensureRerollPenalties();
     const { teamCount, songCount, teamNames } = gameState.settings;
     const container = document.getElementById("result-body");
 
@@ -1263,6 +1381,9 @@
         const res = calculateFrameResult(t, s);
         if (res) finalScore += res.subtotal;
       }
+      const penalty = gameState.rerollPenalties[t] || 0;
+      finalScore += penalty;
+
       teamResults.push({
         teamIdx: t,
         name: teamNames[t] || `チーム${t + 1}`,
@@ -1281,20 +1402,21 @@
     }
 
     const topScore = teamResults[0].score;
+    // 平均点なので小数点以下を表示を残す
     const avgAllTeams = sumAllTotal / teamCount;
 
     let html = "";
 
     if (teamCount === 2) {
       const isDraw = teamResults[0].score === teamResults[1].score;
-      const diff = Math.abs(teamResults[0].score - teamResults[1].score).toFixed(1);
+      const diff = Math.abs(teamResults[0].score - teamResults[1].score);
 
       html += `<div style="text-align:center; font-size:1.2rem; margin-bottom:12px; font-weight:bold; color:var(--accent-yellow);">`;
       if (isDraw) {
-        html += `🤝 引き分け！ (${teamResults[0].score.toFixed(1)}点)`;
+        html += `🤝 引き分け！ (${Math.round(teamResults[0].score)}点)`;
       } else {
-        html += `👑 1位: ${teamResults[0].name} (${teamResults[0].score.toFixed(1)}点)<br>`;
-        html += `<span style="font-size:0.9rem; color:var(--text-sub);">2位: ${teamResults[1].name} (${teamResults[1].score.toFixed(1)}点) / 点差: ${diff}点</span>`;
+        html += `👑 1位: ${teamResults[0].name} (${Math.round(teamResults[0].score)}点)<br>`;
+        html += `<span style="font-size:0.9rem; color:var(--text-sub);">2位: ${teamResults[1].name} (${Math.round(teamResults[1].score)}点) / 点差: ${Math.round(diff)}点</span>`;
       }
       html += `</div>`;
     } else {
@@ -1302,13 +1424,13 @@
       html += `<table class="breakdown-table"><thead><tr><th>順位</th><th>チーム名</th><th>最終点</th><th>1位差</th><th>平均差</th></tr></thead><tbody>`;
       
       teamResults.forEach(item => {
-        const diffTop = (topScore - item.score).toFixed(1);
-        const diffAvg = (item.score - avgAllTeams).toFixed(1);
+        const diffTop = Math.round(topScore - item.score);
+        const diffAvg = Math.round(item.score - avgAllTeams);
         html += `
           <tr>
             <td><b>${item.rank}位</b></td>
             <td>${item.name}</td>
-            <td style="color:var(--accent-cyan); font-weight:bold;">${item.score.toFixed(1)}</td>
+            <td style="color:var(--accent-cyan); font-weight:bold;">${Math.round(item.score)}</td>
             <td>-${diffTop}</td>
             <td>${diffAvg >= 0 ? "+" + diffAvg : diffAvg}</td>
           </tr>
@@ -1322,6 +1444,7 @@
   }
 
   function exportPDF() {
+    ensureRerollPenalties();
     const { teamCount, songCount, teamNames } = gameState.settings;
     const printArea = document.createElement("div");
     printArea.style.padding = "20px";
@@ -1363,12 +1486,12 @@
             <tr>
               <td style="text-align:center;">${s + 1}</td>
               <td>${data.title || "-"}</td>
-              <td style="text-align:right;">${res.rawScore.toFixed(1)}</td>
-              <td style="text-align:right;">${res.avgScore.toFixed(1)}</td>
+              <td style="text-align:right;">${Math.round(res.rawScore)}</td>
+              <td style="text-align:right;">${Math.round(res.avgScore)}</td>
               <td style="text-align:center;">${res.mark}</td>
-              <td style="text-align:right;">${res.baseScore.toFixed(1)}</td>
-              <td style="text-align:right;">${res.bonus.toFixed(1)}</td>
-              <td style="text-align:right;"><b>${res.subtotal.toFixed(1)}</b></td>
+              <td style="text-align:right;">${Math.round(res.baseScore)}</td>
+              <td style="text-align:right;">${Math.round(res.bonus)}</td>
+              <td style="text-align:right;"><b>${Math.round(res.subtotal)}</b></td>
             </tr>
           `;
         } else {
@@ -1376,11 +1499,15 @@
         }
       }
 
+      const penalty = gameState.rerollPenalties[t] || 0;
+      const finalScoreWithPenalty = totalScore + penalty;
+
       pdfHTML += `
             </tbody>
           </table>
-          <div style="text-align:right; font-weight:bold; font-size:11px; margin-top:2px;">
-            合計スコア: ${totalScore.toFixed(1)} 点
+          <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11px; margin-top:4px;">
+            <span>引き直しペナルティ: ${penalty}点</span>
+            <span>合計スコア: ${Math.round(finalScoreWithPenalty)}点</span>
           </div>
         </div>
       `;
