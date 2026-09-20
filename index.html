@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>カラオケボウリング</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="カラオケボウリング">
+  <!-- html2pdf.js (PDF出力用) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    /* ==========================================
+       1. 基本設定・デンモク風ダークテーマ配色
+       ========================================== */
+    :root {
+      --bg-color: #0b0d12;
+      --card-bg: #161a22;
+      --panel-bg: #1f2430;
+      --accent-red: #ff2a5f;
+      --accent-yellow: #ffc107;
+      --accent-gold: #ffd700;
+      --accent-cyan: #00e5ff;
+      --text-main: #ffffff;
+      --text-sub: #a0a8b8;
+      --border-color: #2a3142;
+      --strike-color: #ff3b30;
+      --spare-color: #34c759;
+      --open-color: #007aff;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body, html {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      overflow: hidden; /* スクロール禁止 */
+      position: fixed;
+    }
+
+    /* PWA Safe Area 考慮 */
+    #app-container {
+      width: 100%;
+      height: 100%;
+      padding-top: var(--safe-top);
+      padding-right: var(--safe-right);
+      padding-bottom: var(--safe-bottom);
+      padding-left: var(--safe-left);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ==========================================
+       2. ヘッダー領域
+       ========================================== */
+    header {
+      height: 42px;
+      background: linear-gradient(180deg, #242936 0%, #12151c 100%);
+      border-bottom: 2px solid var(--accent-red);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      font-weight: 900;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+      background: linear-gradient(45deg, var(--accent-red), var(--accent-yellow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .time-badge {
+      background: rgba(0, 229, 255, 0.15);
+      border: 1px solid var(--accent-cyan);
+      color: var(--accent-cyan);
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .header-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn {
+      background: #2a3142;
+      color: #fff;
+      border: 1px solid #404b63;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: active 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+      opacity: 0.8;
+    }
+
+    .btn-danger { background: #8b0000; border-color: var(--accent-red); }
+    .btn-primary { background: #0055b8; border-color: var(--open-color); }
+    .btn-success { background: #1b7a3e; border-color: var(--spare-color); }
+
+    /* ==========================================
+       3. メインコンテンツ（スコア表 ＋ ルーレット）
+       ========================================== */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 240px;
+      gap: 8px;
+      padding: 8px;
+      min-height: 0; /* フレックス/グリッドはみ出し防止 */
+    }
+
+    /* --- スコア表エリア --- */
+    .score-section {
+      background: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .score-table-wrapper {
+      flex: 1;
+      overflow-x: auto;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .score-table {
+      width: 100%;
+      height: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .score-table th, .score-table td {
+      border: 1px solid var(--border-color);
+      text-align: center;
+      vertical-align: middle;
+      padding: 2px;
+    }
+
+    .score-table th {
+      background: #10131a;
+      color: var(--text-sub);
+      font-size: 0.75rem;
+      height: 24px;
+    }
+
+    .team-name-cell {
+      background: #1a202c;
+      font-weight: bold;
+      font-size: 0.85rem;
+      color: var(--accent-yellow);
+      width: 90px;
+      word-break: break-all;
+    }
+
+    .total-score-cell {
+      background: #182232;
+      color: var(--accent-cyan);
+      font-size: 1.1rem;
+      font-weight: 900;
+      width: 70px;
+    }
+
+    /* 1フレーム（1曲）のセル構造 */
+    .frame-cell {
+      background: #12151d;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s;
+    }
+
+    .frame-cell.active {
+      outline: 2px solid var(--accent-yellow);
+      background: #252b3b !important;
+    }
+
+    .frame-cell.filled {
+      background: #1a1e29;
+    }
+
+    .frame-box {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+    }
+
+    .frame-top {
+      display: flex;
+      border-bottom: 1px dashed #2a3142;
+      height: 20px;
+      font-size: 0.7rem;
+    }
+
+    .raw-score-val {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-sub);
+    }
+
+    .mark-val {
+      width: 22px;
+      background: #232938;
+      border-left: 1px solid #2a3142;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.75rem;
+    }
+
+    .mark-strike { color: var(--accent-red); }
+    .mark-spare { color: var(--spare-color); }
+    .mark-g { color: #888; }
+
+    .frame-bottom {
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.85rem;
+      color: var(--text-main);
+    }
+
+    .waiting-text {
+      font-size: 0.65rem;
+      color: #e6a23c;
+    }
+
+    /* --- ルーレットエリア --- */
+    .roulette-section {
+      background: var(--card-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+      gap: 8px;
+    }
+
+    .roulette-title {
+      font-size: 0.75rem;
+      color: var(--text-sub);
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /* 縦回転リール */
+    .reel-window {
+      flex: 1;
+      background: #000;
+      border: 2px solid var(--accent-red);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 0 10px rgba(255, 42, 95, 0.5);
+    }
+
+    .reel-container {
+      width: 100%;
+      text-align: center;
+      padding: 0 8px;
+      transition: transform 0.1s linear;
+    }
+
+    .reel-item {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: var(--accent-yellow);
+      line-height: 1.3;
+      word-break: break-all;
+    }
+
+    .reel-window.spinning .reel-container {
+      animation: reelSpin 0.1s infinite linear;
+    }
+
+    @keyframes reelSpin {
+      0% { transform: translateY(-20px); opacity: 0.5; }
+      100% { transform: translateY(20px); opacity: 0.5; }
+    }
+
+    .target-frame-info {
+      font-size: 0.75rem;
+      text-align: center;
+      color: var(--accent-cyan);
+      background: #11151f;
+      padding: 4px;
+      border-radius: 4px;
+    }
+
+    .roulette-btn {
+      background: linear-gradient(135deg, #ff2a5f 0%, #b3002d 100%);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: 900;
+      font-size: 0.9rem;
+      cursor: pointer;
+      box-shadow: 0 3px 0 #7a001e;
+    }
+
+    .roulette-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #7a001e;
+    }
+
+    /* ==========================================
+       4. モーダル / ダイアログ共通
+       ========================================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-content {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      background: #12151c;
+      padding: 10px 16px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--accent-yellow);
+    }
+
+    .modal-body {
+      padding: 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+
+    .modal-footer {
+      padding: 10px 14px;
+      background: #12151c;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      color: var(--text-sub);
+      font-size: 0.75rem;
+    }
+
+    .form-control {
+      background: #0f1218;
+      border: 1px solid #333a4d;
+      color: #fff;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+    }
+
+    /* キーパッド型入力 (ポップアップ用) */
+    .num-input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* 内訳表モーダル特有 */
+    .breakdown-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.7rem;
+    }
+
+    .breakdown-table th, .breakdown-table td {
+      border: 1px solid #333a4d;
+      padding: 4px 2px;
+      text-align: center;
+    }
+
+    .breakdown-table th {
+      background: #12151c;
+      color: var(--accent-cyan);
+    }
+
+    /* 印刷/PDF専用非表示エリア */
+    #pdf-print-area {
+      display: none;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #pdf-print-area, #pdf-print-area * { visibility: visible; }
+      #pdf-print-area {
+        position: absolute;
+        left: 0; top: 0;
+        width: 100%;
+        display: block !important;
+        background: #fff !important;
+        color: #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+  <!-- ヘッダー -->
+  <header>
+    <div class="logo">🎤🎳 カラオケボウリング</div>
+    <div class="header-info">
+      <div id="remaining-time" class="time-badge">残り -- フレーム (約--分)</div>
+    </div>
+    <div class="header-btns">
+      <button class="btn btn-danger" onclick="confirmClearScores()">クリア</button>
+      <button class="btn" onclick="openSettingsModal()">設定</button>
+      <button class="btn btn-primary" onclick="openBreakdownModal()">内訳</button>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main>
+    <!-- 左側：スコア表 -->
+    <section class="score-section">
+      <div class="score-table-wrapper">
+        <table class="score-table">
+          <thead>
+            <tr id="score-table-header">
+              <th style="width: 80px;">チーム</th>
+              <!-- 動的に曲数分生成 -->
+              <th style="width: 70px;">合計</th>
+            </tr>
+          </thead>
+          <tbody id="score-table-body">
+            <!-- 動的にチーム分生成 -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 右側：ルーレット -->
+    <section class="roulette-section">
+      <div class="roulette-title">🎰 選曲条件ルーレット</div>
+      <div id="target-frame-display" class="target-frame-info">対象: 1曲目 - チーム1</div>
+      <div id="reel-window" class="reel-window">
+        <div id="reel-container" class="reel-container">
+          <div id="reel-text" class="reel-item">ボタンを押してルーレット回転</div>
+        </div>
+      </div>
+      <button class="roulette-btn" onclick="spinRoulette()">ルーレットを回す</button>
+    </section>
+  </main>
+</div>
+
+<!-- ==========================================
+     モーダル: 点数入力
+     ========================================== -->
+<div id="score-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span id="modal-cell-title">スコア入力</span>
+      <span style="cursor:pointer;" onclick="closeModal('score-modal')">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="target-frame-info" id="modal-condition-preview">条件: なし</div>
+      <div class="form-group">
+        <label>曲名 (任意):</label>
+        <input type="text" id="input-song-title" class="form-control" placeholder="例: 残響散歌">
+      </div>
+      <div class="num-input-grid">
+        <div class="form-group">
+          <label>素点 (例: 92.541):</label>
+          <input type="number" step="0.001" id="input-raw-score" class="form-control" placeholder="90.000">
+        </div>
+        <div class="form-group">
+          <label>全国平均 (例: 85.320):</label>
+          <input type="number" step="0.001" id="input-avg-score" class="form-control" placeholder="85.000">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('score-modal')">キャンセル</button>
+      <button id="btn-save-score" class="btn btn-success" onclick="saveScoreInput()">セット</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     モーダル: 設定
+     ========================================== -->
+<div id="settings-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>ゲーム設定</span>
+      <span style="cursor:pointer;" onclick="closeModal('settings-modal')">✕</span>
+    </div>
+    <div class="modal-body">
+      <div class="num-input-grid">
+        <div class="form-group">
+          <label>チーム数 (1~5):</label>
+          <input type="number" id="setting-team-count" class="form-control" min="1" max="5">
+        </div>
+        <div class="form-group">
+          <label>1チームあたりの曲数 (1~10):</label>
+          <input type="number" id="setting-song-count" class="form-control" min="1" max="10">
+        </div>
+      </div>
+      <div id="team-names-container" class="form-group">
+        <!-- 動的生成 -->
+      </div>
+      <hr style="border-color: var(--border-color);">
+      <div style="font-weight: bold; color: var(--accent-cyan); margin-top:4px;">ルール詳細設定</div>
+      <div class="form-group">
+        <label>スペア判定差 (素点-平均 ≧ X):</label>
+        <input type="number" step="0.1" id="setting-spare-diff" class="form-control">
+      </div>
+      <div class="num-input-grid">
+        <div class="form-group">
+          <label>最終ストライク倍率:</label>
+          <input type="number" step="0.1" id="setting-final-strike" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>最終スペア倍率:</label>
+          <input type="number" step="0.1" id="setting-final-spare" class="form-control">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('settings-modal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveSettings()">保存して戻る</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     モーダル: 内訳
+     ========================================== -->
+<div id="breakdown-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 700px; width: 95%;">
+    <div class="modal-header">
+      <span>スコア詳細内訳</span>
+      <span style="cursor:pointer;" onclick="closeModal('breakdown-modal')">✕</span>
+    </div>
+    <div class="modal-body" id="breakdown-body">
+      <!-- 動的生成 -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="exportPDF()">PDF出力シート生成</button>
+      <button class="btn" onclick="closeModal('breakdown-modal')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     モーダル: 最終結果表示
+     ========================================== -->
+<div id="result-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>🏆 最終計算結果</span>
+      <span style="cursor:pointer;" onclick="closeModal('result-modal')">✕</span>
+    </div>
+    <div class="modal-body" id="result-body">
+      <!-- 動的生成 -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-success" onclick="exportPDF()">PDFスコア表を出力</button>
+      <button class="btn" onclick="closeModal('result-modal')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     5. JavaScript アプリケーションロジック
+     ========================================== -->
+<script>
+  /* ------------------------------------------
+     状態管理 (State)
+     ------------------------------------------ */
+  const STORAGE_KEY = "KARAOKE_BOWLING_DATA_V1";
+
+  // デフォルト選曲条件文 (conditions.html の読み込み失敗時フォールバック)
+  const DEFAULT_CONDITIONS = [
+    "「あ行」から始まるアーティストの曲",
+    "アニメソング・特撮ソング",
+    "2010年代以降にリリースされた曲",
+    "バラード・ゆったりした曲",
+    "タイトルが4文字以下の曲",
+    "デュエットまたはコラボ曲",
+    "男性ボーカルの曲",
+    "女性ボーカルの曲",
+    "自分が十八番（得意）としている曲",
+    "全国平均が80点台の曲"
+  ];
+
+  let conditionsList = [...DEFAULT_CONDITIONS];
+
+  let gameState = {
+    settings: {
+      teamCount: 2,
+      songCount: 5,
+      teamNames: ["チームA", "チームB"],
+      spareDiff: 0.0,
+      finalStrikeBonus: 2.0,
+      finalSpareBonus: 1.5
+    },
+    // scores[teamIdx][songIdx] = { rawScore, avgScore, title, condition }
+    scores: [],
+    currentCondition: "（条件未選択）",
+    activeCell: { teamIdx: 0, songIdx: 0 },
+    isFinished: false
+  };
+
+  /* ------------------------------------------
+     初期化 & LocalStorage 処理
+     ------------------------------------------ */
+  window.addEventListener("DOMContentLoaded", async () => {
+    await fetchConditions();
+    loadState();
+    renderApp();
+  });
+
+  async function fetchConditions() {
+    try {
+      const res = await fetch("conditions.html");
+      if (res.ok) {
+        const text = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, "text/html");
+        const items = Array.from(doc.querySelectorAll("li")).map(el => el.textContent.trim());
+        if (items.length > 0) conditionsList = items;
+      }
+    } catch (e) {
+      console.warn("conditions.html の読み込みに失敗したため、初期条件を使用します。", e);
+    }
+  }
+
+  function loadState() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        gameState = { ...gameState, ...parsed };
+      } catch (e) {
+        console.error("データ復元エラー", e);
+        initEmptyScores();
+      }
+    } else {
+      initEmptyScores();
+    }
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+  }
+
+  function initEmptyScores() {
+    const { teamCount, songCount } = gameState.settings;
+    gameState.scores = Array.from({ length: teamCount }, () =>
+      Array.from({ length: songCount }, () => null)
+    );
+    gameState.activeCell = { teamIdx: 0, songIdx: 0 };
+    gameState.isFinished = false;
+  }
+
+  /* ------------------------------------------
+     スコア計算コアロジック (仕様通り)
+     ------------------------------------------ */
+  function calculateFrameResult(teamIdx, songIdx) {
+    const frameData = gameState.scores[teamIdx][songIdx];
+    if (!frameData) return null;
+
+    const { rawScore, avgScore } = frameData;
+    const diff = rawScore - avgScore; // 平均差
+    const isStrike = rawScore >= 90.0;
+    const isSpare = !isStrike && (diff >= gameState.settings.spareDiff);
+
+    const isLastSong = (songIdx === gameState.settings.songCount - 1);
+    const nextFrame = isLastSong ? null : gameState.scores[teamIdx][songIdx + 1];
+
+    let baseScore = rawScore + diff; // 基本点 = 素点 + 平均差
+    let bonus = 0;
+    let isWaiting = false;
+    let mark = "OPEN";
+
+    if (isStrike) {
+      mark = "STRIKE";
+      if (isLastSong) {
+        // 最終曲ストライク: 素点 + 平均差 * 最終ストライク倍率
+        // ボーナス扱い = 小計 - 基本点
+        const subtotal = rawScore + (diff * gameState.settings.finalStrikeBonus);
+        bonus = subtotal - baseScore;
+      } else {
+        if (nextFrame) {
+          const nextDiff = nextFrame.rawScore - nextFrame.avgScore;
+          bonus = nextDiff * 2;
+        } else {
+          isWaiting = true;
+        }
+      }
+    } else if (isSpare) {
+      mark = "SPARE";
+      if (isLastSong) {
+        // 最終曲スペア: 素点 + 平均差 * 最終スペア倍率
+        const subtotal = rawScore + (diff * gameState.settings.finalSpareBonus);
+        bonus = subtotal - baseScore;
+      } else {
+        if (nextFrame) {
+          const nextDiff = nextFrame.rawScore - nextFrame.avgScore;
+          bonus = nextDiff * 1;
+        } else {
+          isWaiting = true;
+        }
+      }
+    } else {
+      mark = "OPEN";
+      bonus = 0;
+    }
+
+    const subtotal = isWaiting ? baseScore : (baseScore + bonus);
+    const displayDiff = diff <= 0 ? "G" : (diff > 0 ? `+${diff.toFixed(2)}` : diff.toFixed(2));
+
+    return {
+      rawScore,
+      avgScore,
+      diff,
+      displayDiff,
+      isStrike,
+      isSpare,
+      mark,
+      baseScore,
+      bonus,
+      subtotal,
+      isWaiting
+    };
+  }
+
+  /* ------------------------------------------
+     描画レンダリング (UI & レスポンシブ)
+     ------------------------------------------ */
+  function renderApp() {
+    renderHeaderInfo();
+    renderScoreTable();
+    renderRouletteTarget();
+    checkAutoFinished();
+  }
+
+  function renderHeaderInfo() {
+    const { teamCount, songCount } = gameState.settings;
+    let filledCount = 0;
+    const totalFrames = teamCount * songCount;
+
+    for (let t = 0; t < teamCount; t++) {
+      for (let s = 0; s < songCount; s++) {
+        if (gameState.scores[t][s]) filledCount++;
+      }
+    }
+
+    const remainFrames = totalFrames - filledCount;
+    const remainElem = document.getElementById("remaining-time");
+
+    if (remainFrames === 0) {
+      remainElem.textContent = "入力完了";
+      remainElem.style.borderColor = "var(--spare-color)";
+      remainElem.style.color = "var(--spare-color)";
+    } else {
+      const remainMinutes = remainFrames * 4;
+      remainElem.textContent = `残り ${remainFrames} フレーム (約${remainMinutes}分)`;
+      remainElem.style.borderColor = "var(--accent-cyan)";
+      remainElem.style.color = "var(--accent-cyan)";
+    }
+  }
+
+  function renderScoreTable() {
+    const { teamCount, songCount, teamNames } = gameState.settings;
+    const headerRow = document.getElementById("score-table-header");
+    const tbody = document.getElementById("score-table-body");
+
+    // ヘッダー構築
+    let headerHTML = `<th style="width: 80px;">チーム</th>`;
+    for (let s = 0; s < songCount; s++) {
+      headerHTML += `<th>${s + 1}曲目</th>`;
+    }
+    headerHTML += `<th style="width: 70px;">合計</th>`;
+    headerRow.innerHTML = headerHTML;
+
+    // ボディ構築
+    tbody.innerHTML = "";
+    for (let t = 0; t < teamCount; t++) {
+      const tr = document.createElement("tr");
+
+      // チーム名
+      const teamTd = document.createElement("td");
+      teamTd.className = "team-name-cell";
+      teamTd.textContent = teamNames[t] || `チーム${t + 1}`;
+      tr.appendChild(teamTd);
+
+      let teamTotalScore = 0;
+
+      // 各曲フレーム
+      for (let s = 0; s < songCount; s++) {
+        const td = document.createElement("td");
+        td.className = "frame-cell";
+        if (t === gameState.activeCell.teamIdx && s === gameState.activeCell.songIdx) {
+          td.classList.add("active");
+        }
+
+        const scoreData = gameState.scores[t][s];
+        const res = calculateFrameResult(t, s);
+
+        if (scoreData && res) {
+          td.classList.add("filled");
+          teamTotalScore += res.subtotal;
+
+          let markClass = "";
+          let markText = "";
+          if (res.isStrike) { markClass = "mark-strike"; markText = "X"; }
+          else if (res.isSpare) { markClass = "mark-spare"; markText = "/"; }
+          else { markClass = "mark-g"; markText = res.diff <= 0 ? "G" : "-"; }
+
+          td.innerHTML = `
+            <div class="frame-box" onclick="selectCell(${t}, ${s})">
+              <div class="frame-top">
+                <span class="raw-score-val">${scoreData.rawScore.toFixed(1)}</span>
+                <span class="mark-val ${markClass}">${markText}</span>
+              </div>
+              <div class="frame-bottom">
+                ${res.isWaiting ? `<span class="waiting-text">次曲待ち</span>` : res.subtotal.toFixed(1)}
+              </div>
+            </div>
+          `;
+        } else {
+          td.innerHTML = `
+            <div class="frame-box" onclick="selectCell(${t}, ${s})">
+              <div class="frame-top">
+                <span class="raw-score-val">-</span>
+                <span class="mark-val"></span>
+              </div>
+              <div class="frame-bottom">-</div>
+            </div>
+          `;
+        }
+        tr.appendChild(td);
+      }
+
+      // 合計セル
+      const totalTd = document.createElement("td");
+      totalTd.className = "total-score-cell";
+      totalTd.textContent = teamTotalScore.toFixed(1);
+      tr.appendChild(totalTd);
+
+      tbody.appendChild(tr);
+    }
+  }
+
+  function renderRouletteTarget() {
+    const { teamIdx, songIdx } = gameState.activeCell;
+    const teamName = gameState.settings.teamNames[teamIdx] || `チーム${teamIdx + 1}`;
+    document.getElementById("target-frame-display").textContent = `対象: ${songIdx + 1}曲目 - ${teamName}`;
+  }
+
+  /* ------------------------------------------
+     セル選択 & スコア入力ダイアログ
+     ------------------------------------------ */
+  function selectCell(teamIdx, songIdx) {
+    gameState.activeCell = { teamIdx, songIdx };
+    renderScoreTable();
+    renderRouletteTarget();
+    openScoreModal();
+  }
+
+  function openScoreModal() {
+    const { teamIdx, songIdx } = gameState.activeCell;
+    const teamName = gameState.settings.teamNames[teamIdx] || `チーム${teamIdx + 1}`;
+    const existing = gameState.scores[teamIdx][songIdx];
+
+    document.getElementById("modal-cell-title").textContent = `${teamName} - ${songIdx + 1}曲目の入力`;
+    
+    // 条件文の表示
+    const condText = existing ? existing.condition : gameState.currentCondition;
+    document.getElementById("modal-condition-preview").textContent = `選曲条件: ${condText}`;
+
+    const saveBtn = document.getElementById("btn-save-score");
+
+    if (existing) {
+      document.getElementById("input-song-title").value = existing.title || "";
+      document.getElementById("input-raw-score").value = existing.rawScore;
+      document.getElementById("input-avg-score").value = existing.avgScore;
+      saveBtn.textContent = "更新";
+    } else {
+      document.getElementById("input-song-title").value = "";
+      document.getElementById("input-raw-score").value = "";
+      document.getElementById("input-avg-score").value = "";
+      saveBtn.textContent = "セット";
+    }
+
+    openModal("score-modal");
+  }
+
+  function saveScoreInput() {
+    const rawVal = parseFloat(document.getElementById("input-raw-score").value);
+    const avgVal = parseFloat(document.getElementById("input-avg-score").value);
+    const titleVal = document.getElementById("input-song-title").value.trim();
+
+    if (isNaN(rawVal) || isNaN(avgVal)) {
+      alert("素点と全国平均を正しく入力してください。");
+      return;
+    }
+
+    const { teamIdx, songIdx } = gameState.activeCell;
+    const existing = gameState.scores[teamIdx][songIdx];
+
+    // 新規セット時は現在のルーレット条件を保存、更新時は既存条件を維持
+    const conditionToSave = existing ? existing.condition : gameState.currentCondition;
+
+    gameState.scores[teamIdx][songIdx] = {
+      rawScore: rawVal,
+      avgScore: avgVal,
+      title: titleVal,
+      condition: conditionToSave
+    };
+
+    saveState();
+    closeModal("score-modal");
+
+    // 自動進行: 第1曲全チーム -> 第2曲全チーム ...
+    advanceToNextUnfilledCell();
+    renderApp();
+  }
+
+  function advanceToNextUnfilledCell() {
+    const { teamCount, songCount } = gameState.settings;
+    for (let s = 0; s < songCount; s++) {
+      for (let t = 0; t < teamCount; t++) {
+        if (!gameState.scores[t][s]) {
+          gameState.activeCell = { teamIdx: t, songIdx: s };
+          return;
+        }
+      }
+    }
+  }
+
+  /* ------------------------------------------
+     ルーレット機能 (縦スロット風)
+     ------------------------------------------ */
+  let isSpinning = false;
+  function spinRoulette() {
+    if (isSpinning) return;
+    isSpinning = true;
+
+    const reelWindow = document.getElementById("reel-window");
+    const reelText = document.getElementById("reel-text");
+    reelWindow.classList.add("spinning");
+
+    let counter = 0;
+    const interval = setInterval(() => {
+      const randomItem = conditionsList[Math.floor(Math.random() * conditionsList.length)];
+      reelText.textContent = randomItem;
+      counter++;
+      if (counter > 20) {
+        clearInterval(interval);
+        reelWindow.classList.remove("spinning");
+        const finalSelected = conditionsList[Math.floor(Math.random() * conditionsList.length)];
+        reelText.textContent = finalSelected;
+        gameState.currentCondition = finalSelected;
+        isSpinning = false;
+        saveState();
+      }
+    }, 80);
+  }
+
+  /* ------------------------------------------
+     設定モーダル & 保存・検証 (仕様14対応)
+     ------------------------------------------ */
+  function openSettingsModal() {
+    const { teamCount, songCount, teamNames, spareDiff, finalStrikeBonus, finalSpareBonus } = gameState.settings;
+
+    document.getElementById("setting-team-count").value = teamCount;
+    document.getElementById("setting-song-count").value = songCount;
+    document.getElementById("setting-spare-diff").value = spareDiff;
+    document.getElementById("setting-final-strike").value = finalStrikeBonus;
+    document.getElementById("setting-final-spare").value = finalSpareBonus;
+
+    renderTeamNameInputs(teamCount, teamNames);
+
+    document.getElementById("setting-team-count").onchange = (e) => {
+      const newCount = Math.min(5, Math.max(1, parseInt(e.target.value) || 1));
+      renderTeamNameInputs(newCount, teamNames);
+    };
+
+    openModal("settings-modal");
+  }
+
+  function renderTeamNameInputs(count, existingNames) {
+    const container = document.getElementById("team-names-container");
+    container.innerHTML = "<label>チーム名:</label>";
+    for (let i = 0; i < count; i++) {
+      const input = document.createElement("input");
+      input.type = "text";
+      input.className = "form-control team-name-input";
+      input.style.marginBottom = "4px";
+      input.value = existingNames[i] || `チーム${String.fromCharCode(65 + i)}`;
+      container.appendChild(input);
+    }
+  }
+
+  function saveSettings() {
+    const newTeamCount = parseInt(document.getElementById("setting-team-count").value);
+    const newSongCount = parseInt(document.getElementById("setting-song-count").value);
+    const newSpareDiff = parseFloat(document.getElementById("setting-spare-diff").value);
+    const newFinalStrike = parseFloat(document.getElementById("setting-final-strike").value);
+    const newFinalSpare = parseFloat(document.getElementById("setting-final-spare").value);
+
+    const nameInputs = document.querySelectorAll(".team-name-input");
+    const newTeamNames = Array.from(nameInputs).map((inp, idx) => inp.value.trim() || `チーム${idx + 1}`);
+
+    // スコアが1つでも入力されているか確認
+    let hasScores = false;
+    for (let t = 0; t < gameState.scores.length; t++) {
+      for (let s = 0; s < (gameState.scores[t] ? gameState.scores[t].length : 0); s++) {
+        if (gameState.scores[t][s]) { hasScores = true; break; }
+      }
+    }
+
+    // ルール設定項目の変更判定 (チーム名以外)
+    const isRuleChanged =
+      newTeamCount !== gameState.settings.teamCount ||
+      newSongCount !== gameState.settings.songCount ||
+      newSpareDiff !== gameState.settings.spareDiff ||
+      newFinalStrike !== gameState.settings.finalStrikeBonus ||
+      newFinalSpare !== gameState.settings.finalSpareBonus;
+
+    if (hasScores && isRuleChanged) {
+      if (!confirm("入力されたスコアは消去されますがよろしいですか？")) {
+        return; // 「いいえ」で保持
+      }
+      // スコアデータ消去
+      gameState.settings = {
+        teamCount: newTeamCount,
+        songCount: newSongCount,
+        teamNames: newTeamNames,
+        spareDiff: newSpareDiff,
+        finalStrikeBonus: newFinalStrike,
+        finalSpareBonus: newFinalSpare
+      };
+      initEmptyScores();
+    } else {
+      // チーム名変更のみ、または未入力状態
+      gameState.settings = {
+        teamCount: newTeamCount,
+        songCount: newSongCount,
+        teamNames: newTeamNames,
+        spareDiff: newSpareDiff,
+        finalStrikeBonus: newFinalStrike,
+        finalSpareBonus: newFinalSpare
+      };
+      // サイズが変わっていれば配列再構成
+      if (gameState.scores.length !== newTeamCount || (gameState.scores[0] && gameState.scores[0].length !== newSongCount)) {
+        initEmptyScores();
+      }
+    }
+
+    saveState();
+    closeModal("settings-modal");
+    renderApp();
+  }
+
+  /* ------------------------------------------
+     完全リセット (仕様15)
+     ------------------------------------------ */
+  function confirmClearScores() {
+    if (confirm("現在の全チーム・全曲の入力スコアを削除してリセットしますか？（設定は保持されます）")) {
+      initEmptyScores();
+      saveState();
+      renderApp();
+    }
+  }
+
+  /* ------------------------------------------
+     内訳表示モーダル (仕様10)
+     ------------------------------------------ */
+  function openBreakdownModal() {
+    const container = document.getElementById("breakdown-body");
+    const { teamCount, songCount, teamNames } = gameState.settings;
+
+    let html = "";
+
+    for (let t = 0; t < teamCount; t++) {
+      const teamName = teamNames[t] || `チーム${t + 1}`;
+      let totalRaw = 0;
+      let filledSongs = 0;
+      let teamFinalTotal = 0;
+
+      html += `<div style="font-weight:bold; color:var(--accent-yellow); margin-top:8px;">■ ${teamName}</div>`;
+      html += `
+        <table class="breakdown-table">
+          <thead>
+            <tr>
+              <th>曲</th>
+              <th>曲名/条件</th>
+              <th>素点</th>
+              <th>平均</th>
+              <th>差</th>
+              <th>判定</th>
+              <th>基本点</th>
+              <th>ボーナス</th>
+              <th>小計</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      for (let s = 0; s < songCount; s++) {
+        const data = gameState.scores[t][s];
+        const res = calculateFrameResult(t, s);
+
+        if (data && res) {
+          totalRaw += data.rawScore;
+          filledSongs++;
+          teamFinalTotal += res.subtotal;
+
+          html += `
+            <tr>
+              <td>${s + 1}</td>
+              <td style="text-align:left;">
+                <div><b>${data.title || "（曲名未入力）"}</b></div>
+                <div style="font-size:0.65rem; color:var(--text-sub);">${data.condition}</div>
+              </td>
+              <td>${res.rawScore.toFixed(1)}</td>
+              <td>${res.avgScore.toFixed(1)}</td>
+              <td>${res.displayDiff}</td>
+              <td>${res.mark}</td>
+              <td>${res.baseScore.toFixed(1)}</td>
+              <td>${res.isWaiting ? "次曲待ち" : res.bonus.toFixed(1)}</td>
+              <td><b>${res.isWaiting ? res.baseScore.toFixed(1) : res.subtotal.toFixed(1)}</b></td>
+            </tr>
+          `;
+        } else {
+          html += `
+            <tr>
+              <td>${s + 1}</td>
+              <td style="color:#666;">-</td>
+              <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
+            </tr>
+          `;
+        }
+      }
+
+      const avgRaw = filledSongs > 0 ? (totalRaw / filledSongs).toFixed(2) : "-";
+
+      html += `
+          </tbody>
+        </table>
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; background:#11141c; padding:4px 8px; border-radius:4px; margin-top:4px;">
+          <span>素点合計: <b>${totalRaw.toFixed(1)}</b></span>
+          <span>素点平均: <b>${avgRaw}</b></span>
+          <span>最終計算点: <b style="color:var(--accent-cyan);">${teamFinalTotal.toFixed(1)}</b></span>
+        </div>
+      `;
+    }
+
+    container.innerHTML = html;
+    openModal("breakdown-modal");
+  }
+
+  /* ------------------------------------------
+     全曲終了判定 & 最終結果表示 (仕様11)
+     ------------------------------------------ */
+  function checkAutoFinished() {
+    const { teamCount, songCount } = gameState.settings;
+    for (let t = 0; t < teamCount; t++) {
+      for (let s = 0; s < songCount; s++) {
+        if (!gameState.scores[t][s]) return; // 未入力あり
+      }
+    }
+
+    if (!gameState.isFinished) {
+      gameState.isFinished = true;
+      saveState();
+      openResultModal();
+    }
+  }
+
+  function openResultModal() {
+    const { teamCount, songCount, teamNames } = gameState.settings;
+    const container = document.getElementById("result-body");
+
+    // チーム別スコア算出
+    const teamResults = [];
+    let sumAllTotal = 0;
+
+    for (let t = 0; t < teamCount; t++) {
+      let finalScore = 0;
+      for (let s = 0; s < songCount; s++) {
+        const res = calculateFrameResult(t, s);
+        if (res) finalScore += res.subtotal;
+      }
+      teamResults.push({
+        teamIdx: t,
+        name: teamNames[t] || `チーム${t + 1}`,
+        score: finalScore
+      });
+      sumAllTotal += finalScore;
+    }
+
+    // 順位付け (同点考慮)
+    teamResults.sort((a, b) => b.score - a.score);
+    let rank = 1;
+    for (let i = 0; i < teamResults.length; i++) {
+      if (i > 0 && teamResults[i].score < teamResults[i - 1].score) {
+        rank = i + 1;
+      }
+      teamResults[i].rank = rank;
+    }
+
+    const topScore = teamResults[0].score;
+    const avgAllTeams = sumAllTotal / teamCount;
+
+    let html = "";
+
+    if (teamCount === 2) {
+      const isDraw = teamResults[0].score === teamResults[1].score;
+      const diff = Math.abs(teamResults[0].score - teamResults[1].score).toFixed(1);
+
+      html += `<div style="text-align:center; font-size:1.2rem; margin-bottom:12px; font-weight:bold; color:var(--accent-yellow);">`;
+      if (isDraw) {
+        html += `🤝 引き分け！ (${teamResults[0].score.toFixed(1)}点)`;
+      } else {
+        html += `👑 1位: ${teamResults[0].name} (${teamResults[0].score.toFixed(1)}点)<br>`;
+        html += `<span style="font-size:0.9rem; color:var(--text-sub);">2位: ${teamResults[1].name} (${teamResults[1].score.toFixed(1)}点) / 点差: ${diff}点</span>`;
+      }
+      html += `</div>`;
+    } else {
+      html += `<div style="font-size:0.85rem; margin-bottom:8px;">全チーム平均点: <b>${avgAllTeams.toFixed(1)}点</b></div>`;
+      html += `<table class="breakdown-table"><thead><tr><th>順位</th><th>チーム名</th><th>最終点</th><th>1位差</th><th>平均差</th></tr></thead><tbody>`;
+      
+      teamResults.forEach(item => {
+        const diffTop = (topScore - item.score).toFixed(1);
+        const diffAvg = (item.score - avgAllTeams).toFixed(1);
+        html += `
+          <tr>
+            <td><b>${item.rank}位</b></td>
+            <td>${item.name}</td>
+            <td style="color:var(--accent-cyan); font-weight:bold;">${item.score.toFixed(1)}</td>
+            <td>-${diffTop}</td>
+            <td>${diffAvg >= 0 ? "+" + diffAvg : diffAvg}</td>
+          </tr>
+        `;
+      });
+      html += `</tbody></table>`;
+    }
+
+    container.innerHTML = html;
+    openModal("result-modal");
+  }
+
+  /* ------------------------------------------
+     PDF出力機能 (レトロボウリングシート風 - 仕様12)
+     ------------------------------------------ */
+  function exportPDF() {
+    const { teamCount, songCount, teamNames } = gameState.settings;
+    const printArea = document.createElement("div");
+    printArea.style.padding = "20px";
+    printArea.style.fontFamily = "monospace, sans-serif";
+    printArea.style.color = "#000";
+    printArea.style.background = "#fff";
+
+    const dateStr = new Date().toLocaleString("ja-JP");
+
+    let pdfHTML = `
+      <div style="text-align:center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
+        <h1 style="font-size:20px; margin:0;">KARAOKE BOWLING SCORE SHEET</h1>
+        <div style="font-size:10px;">出力日時: ${dateStr}</div>
+      </div>
+    `;
+
+    // チーム別テーブル
+    for (let t = 0; t < teamCount; t++) {
+      const tName = teamNames[t] || `チーム${t + 1}`;
+      let totalScore = 0;
+
+      pdfHTML += `
+        <div style="margin-bottom:15px;">
+          <div style="font-weight:bold; font-size:12px;">TEAM: ${tName}</div>
+          <table style="width:100%; border-collapse:collapse; font-size:10px; border:1px solid #000;" border="1">
+            <thead>
+              <tr style="background:#eee;">
+                <th>曲</th>
+                <th>曲名</th>
+                <th>素点</th>
+                <th>平均</th>
+                <th>判定</th>
+                <th>基本点</th>
+                <th>ボーナス</th>
+                <th>小計</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      for (let s = 0; s < songCount; s++) {
+        const res = calculateFrameResult(t, s);
+        const data = gameState.scores[t][s];
+        if (res && data) {
+          totalScore += res.subtotal;
+          pdfHTML += `
+            <tr>
+              <td style="text-align:center;">${s + 1}</td>
+              <td>${data.title || "-"}</td>
+              <td style="text-align:right;">${res.rawScore.toFixed(1)}</td>
+              <td style="text-align:right;">${res.avgScore.toFixed(1)}</td>
+              <td style="text-align:center;">${res.mark}</td>
+              <td style="text-align:right;">${res.baseScore.toFixed(1)}</td>
+              <td style="text-align:right;">${res.bonus.toFixed(1)}</td>
+              <td style="text-align:right;"><b>${res.subtotal.toFixed(1)}</b></td>
+            </tr>
+          `;
+        } else {
+          pdfHTML += `<tr><td style="text-align:center;">${s + 1}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
+        }
+      }
+
+      pdfHTML += `
+            </tbody>
+          </table>
+          <div style="text-align:right; font-weight:bold; font-size:11px; margin-top:2px;">
+            合計スコア: ${totalScore.toFixed(1)} 点
+          </div>
+        </div>
+      `;
+    }
+
+    printArea.innerHTML = pdfHTML;
+
+    // html2pdf 設定 (A4縦・モノクロシート)
+    const opt = {
+      margin: 10,
+      filename: `karaoke_bowling_${Date.now()}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(printArea).save();
+  }
+
+  /* ------------------------------------------
+     モーダルヘルパー
+     ------------------------------------------ */
+  function openModal(id) {
+    document.getElementById(id).classList.add("active");
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove("active");
+  }
+</script>
+</body>
+</html>
