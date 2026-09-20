@@ -207,12 +207,12 @@
     .btn-warning { background: #b75300; border-color: var(--accent-orange); color: #fff; }
 
     /* ==========================================
-       3. メインコンテンツ (横画面デフォルト)
+       3. メインコンテンツ (スコアボード幅を拡大・入力エリアをコンパクト化)
        ========================================== */
     main {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 260px;
+      grid-template-columns: 1fr 190px; /* 入力エリアを190pxに縮小しスコアエリアを右へ拡張 */
       gap: 8px;
       padding: 8px;
       min-height: 0;
@@ -345,33 +345,36 @@
       color: #e6a23c;
     }
 
-    /* --- スコア入力エリア --- */
+    /* --- スコア入力エリア（スクロール完全防止＆コンパクト化） --- */
     .input-section {
       background: var(--card-bg);
       border-radius: 8px;
       border: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
-      padding: 8px;
-      gap: 6px;
-      overflow-y: auto;
+      padding: 6px;
+      gap: 4px;
+      overflow: hidden; /* スクロールなしで画面内に収める */
       height: 100%;
     }
 
     .target-frame-info {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       text-align: center;
       color: var(--accent-cyan);
       background: var(--info-bg);
-      padding: 4px;
+      padding: 3px 4px;
       border-radius: 4px;
       font-weight: bold;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .save-btn {
       width: 100%;
-      padding: 8px;
-      font-size: 0.95rem;
+      padding: 6px;
+      font-size: 0.85rem;
       font-weight: bold;
       margin-top: auto;
     }
@@ -548,7 +551,7 @@
 
       main {
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr 210px;
+        grid-template-rows: 1fr auto;
         gap: 6px;
         padding: 6px;
       }
@@ -558,23 +561,9 @@
         gap: 4px;
       }
 
-      .wheel-container {
-        height: 120px;
-      }
-
-      .wheel-highlight {
-        top: 42px;
-        height: 36px;
-      }
-
-      .wheel-scroll {
-        padding-top: 42px;
-        padding-bottom: 42px;
-      }
-
       .save-btn {
         padding: 6px;
-        font-size: 0.88rem;
+        font-size: 0.85rem;
       }
 
       .target-frame-info {
@@ -649,21 +638,21 @@
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
 
     .form-group label {
       color: var(--text-sub);
-      font-size: 0.75rem;
+      font-size: 0.7rem;
     }
 
     .form-control {
       background: var(--input-bg);
       border: 1px solid var(--input-border);
       color: var(--input-text);
-      padding: 8px;
+      padding: 5px 6px;
       border-radius: 6px;
-      font-size: 0.9rem;
+      font-size: 0.82rem;
     }
 
     .form-control:focus {
@@ -674,41 +663,41 @@
     .num-input-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 8px;
     }
 
-    /* --- 縦ホイールピッカーUI --- */
+    /* --- 縦ホイール式ダイヤルUI (コンパクト調整) --- */
     .wheel-group {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 2px;
     }
 
     .wheel-label {
       color: var(--text-sub);
-      font-size: 0.8rem;
+      font-size: 0.72rem;
       font-weight: bold;
     }
 
     .wheel-container {
       position: relative;
       width: 100%;
-      height: 180px;
+      height: 112px; /* 1項目28px × 4 = 112px */
       background: var(--wheel-bg);
       border: 1px solid var(--border-color);
-      border-radius: 8px;
+      border-radius: 6px;
       overflow: hidden;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
       touch-action: pan-y;
     }
 
     .wheel-highlight {
       position: absolute;
-      top: 72px;
-      left: 6px;
-      right: 6px;
-      height: 36px;
+      top: 42px; /* (112 - 28) / 2 = 42px */
+      left: 4px;
+      right: 4px;
+      height: 28px;
       border-top: 2px solid var(--accent-cyan);
       border-bottom: 2px solid var(--accent-cyan);
       background: rgba(0, 229, 255, 0.08);
@@ -723,8 +712,8 @@
       scroll-snap-type: y mandatory;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-y: contain;
-      padding-top: 72px;
-      padding-bottom: 72px;
+      padding-top: 42px;
+      padding-bottom: 42px;
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
@@ -734,10 +723,10 @@
     }
 
     .wheel-item {
-      height: 36px;
-      line-height: 36px;
+      height: 28px;
+      line-height: 28px;
       text-align: center;
-      font-size: 0.95rem;
+      font-size: 0.8rem;
       color: var(--text-sub);
       opacity: 0.35;
       scroll-snap-align: center;
@@ -750,15 +739,15 @@
     .wheel-item.selected {
       opacity: 1;
       color: var(--accent-cyan);
-      font-size: 1.4rem;
+      font-size: 1.15rem;
       font-weight: 900;
-      text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
-      transform: scale(1.12);
+      text-shadow: 0 0 6px rgba(0, 229, 255, 0.6);
+      transform: scale(1.1);
     }
 
     .wheel-item.near {
       opacity: 0.65;
-      font-size: 1.05rem;
+      font-size: 0.92rem;
       color: var(--wheel-near-color);
     }
 
@@ -1171,11 +1160,11 @@
   };
 
   /* ------------------------------------------
-     縦ホイール式ダイヤルUI制御ロジック
+     縦ホイール式ダイヤルUI制御ロジック (コンパクト化)
      ------------------------------------------ */
   const WHEEL_MIN = 75;
   const WHEEL_MAX = 100;
-  const WHEEL_ITEM_HEIGHT = 36;
+  const WHEEL_ITEM_HEIGHT = 28; /* アイテム高さを28pxに縮小 */
 
   function initWheels() {
     setupWheel('raw');
