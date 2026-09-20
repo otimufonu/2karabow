@@ -910,8 +910,10 @@
           let markText = "";
           if (res.isStrike) { markClass = "mark-strike"; markText = "X"; }
           else if (res.isSpare) { markClass = "mark-spare"; markText = "/"; }
-          else { markClass = "mark-g"; markText = res.diff <= 0 ? "G" : "-"; }
-
+          else {
+            markClass = "mark-g";
+            markText = res.diff <= 0 ? "G" : `${Math.round(res.diff)}`;
+          }
           td.innerHTML = `
             <div class="frame-box" onclick="selectCell(${t}, ${s})">
               <div class="frame-top">
