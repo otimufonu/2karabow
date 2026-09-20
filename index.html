@@ -131,6 +131,7 @@
       padding-left: var(--safe-left);
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
 
     /* ==========================================
@@ -211,10 +212,11 @@
     main {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 240px;
+      grid-template-columns: 1fr 260px;
       gap: 8px;
       padding: 8px;
       min-height: 0;
+      overflow: hidden;
     }
 
     /* --- スコア表エリア --- */
@@ -225,6 +227,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      height: 100%;
     }
 
     .score-table-wrapper {
@@ -342,8 +345,8 @@
       color: #e6a23c;
     }
 
-    /* --- ルーレットエリア --- */
-    .roulette-section {
+    /* --- スコア入力エリア --- */
+    .input-section {
       background: var(--card-bg);
       border-radius: 8px;
       border: 1px solid var(--border-color);
@@ -351,19 +354,134 @@
       flex-direction: column;
       padding: 8px;
       gap: 6px;
+      overflow-y: auto;
+      height: 100%;
     }
 
-    .roulette-title {
+    .target-frame-info {
       font-size: 0.75rem;
-      color: var(--text-sub);
       text-align: center;
+      color: var(--accent-cyan);
+      background: var(--info-bg);
+      padding: 4px;
+      border-radius: 4px;
       font-weight: bold;
     }
 
-    /* 縦回転リール */
+    .save-btn {
+      width: 100%;
+      padding: 8px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      margin-top: auto;
+    }
+
+    /* ==========================================
+       4. フッター（選曲条件結果 70% : 回す 15% : 引き直し 15%）
+       ========================================== */
+    .roulette-footer {
+      height: 50px;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      flex-shrink: 0;
+    }
+
+    .result-block {
+      flex: 7;
+      width: 70%;
+      height: 100%;
+      background: var(--reel-bg);
+      border: 1px solid var(--accent-red);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      padding: 0 8px;
+      position: relative;
+    }
+
+    .result-ticker-wrapper {
+      width: 100%;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .result-ticker-text {
+      display: inline-block;
+      white-space: nowrap;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: var(--accent-yellow);
+    }
+
+    /* テロップアニメーション（長い文面用） */
+    .result-ticker-text.scroll {
+      padding-left: 100%;
+      animation: tickerScroll 12s linear infinite;
+    }
+
+    @keyframes tickerScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .roulette-btn {
+      flex: 1.5;
+      width: 15%;
+      height: 100%;
+      background: linear-gradient(135deg, #ff2a5f 0%, #b3002d 100%);
+      color: white;
+      border: none;
+      padding: 0;
+      border-radius: 6px;
+      font-weight: 900;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      box-shadow: 0 2px 0 #7a001e;
+    }
+
+    .roulette-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 0 0 #7a001e;
+    }
+
+    .reroll-btn {
+      flex: 1.5;
+      width: 15%;
+      height: 100%;
+      background: linear-gradient(135deg, #ff9800 0%, #b56a00 100%);
+      color: white;
+      border: none;
+      padding: 0;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      box-shadow: 0 2px 0 #734300;
+    }
+
+    .reroll-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 0 0 #734300;
+    }
+
+    /* 縦回転リールモーダル用 */
     .reel-window {
-      flex: 1;
-      min-height: 40px;
+      width: 100%;
+      min-height: 80px;
       background: var(--reel-bg);
       border: 2px solid var(--accent-red);
       border-radius: 6px;
@@ -383,7 +501,7 @@
     }
 
     .reel-item {
-      font-size: 0.95rem;
+      font-size: 1.05rem;
       font-weight: bold;
       color: var(--accent-yellow);
       line-height: 1.3;
@@ -399,51 +517,8 @@
       100% { transform: translateY(20px); opacity: 0.5; }
     }
 
-    .target-frame-info {
-      font-size: 0.75rem;
-      text-align: center;
-      color: var(--accent-cyan);
-      background: var(--info-bg);
-      padding: 4px;
-      border-radius: 4px;
-    }
-
-    .roulette-btn {
-      background: linear-gradient(135deg, #ff2a5f 0%, #b3002d 100%);
-      color: white;
-      border: none;
-      padding: 8px;
-      border-radius: 6px;
-      font-weight: 900;
-      font-size: 0.88rem;
-      cursor: pointer;
-      box-shadow: 0 3px 0 #7a001e;
-    }
-
-    .roulette-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 1px 0 #7a001e;
-    }
-
-    .reroll-btn {
-      background: linear-gradient(135deg, #ff9800 0%, #b56a00 100%);
-      color: white;
-      border: none;
-      padding: 7px;
-      border-radius: 6px;
-      font-weight: bold;
-      font-size: 0.82rem;
-      cursor: pointer;
-      box-shadow: 0 3px 0 #734300;
-    }
-
-    .reroll-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 1px 0 #734300;
-    }
-
     /* ==========================================
-       4. 縦画面（Portrait）自動レイアウト切り替え
+       5. 縦画面（Portrait）レイアウト設定
        ========================================== */
     @media (orientation: portrait) {
       header {
@@ -471,45 +546,45 @@
         font-size: 0.72rem;
       }
 
-      /* 左右2列から上下2段に変更 */
       main {
         grid-template-columns: 1fr;
-        grid-template-rows: 1fr 210px; /* 上:スコア表(可変), 下:ルーレット(210px) */
+        grid-template-rows: 1fr 210px;
         gap: 6px;
         padding: 6px;
       }
 
-      .roulette-section {
+      .input-section {
         padding: 6px;
         gap: 4px;
       }
 
-      .roulette-title {
-        font-size: 0.7rem;
+      .wheel-container {
+        height: 120px;
+      }
+
+      .wheel-highlight {
+        top: 42px;
+        height: 36px;
+      }
+
+      .wheel-scroll {
+        padding-top: 42px;
+        padding-bottom: 42px;
+      }
+
+      .save-btn {
+        padding: 6px;
+        font-size: 0.88rem;
       }
 
       .target-frame-info {
         font-size: 0.7rem;
         padding: 2px 4px;
       }
-
-      .reel-item {
-        font-size: 0.85rem;
-      }
-
-      .roulette-btn {
-        padding: 7px;
-        font-size: 0.82rem;
-      }
-
-      .reroll-btn {
-        padding: 6px;
-        font-size: 0.78rem;
-      }
     }
 
     /* ==========================================
-       5. モーダル / ダイアログ共通
+       6. モーダル / ダイアログ共通
        ========================================== */
     .modal-overlay {
       position: fixed;
@@ -619,7 +694,7 @@
     .wheel-container {
       position: relative;
       width: 100%;
-      height: 180px; /* 36px * 5行 */
+      height: 180px;
       background: var(--wheel-bg);
       border: 1px solid var(--border-color);
       border-radius: 8px;
@@ -630,7 +705,7 @@
 
     .wheel-highlight {
       position: absolute;
-      top: 72px; /* (180 - 36) / 2 */
+      top: 72px;
       left: 6px;
       right: 6px;
       height: 36px;
@@ -648,8 +723,8 @@
       scroll-snap-type: y mandatory;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior-y: contain;
-      padding-top: 72px;   /* 上に2項目分(36px * 2)空ける */
-      padding-bottom: 72px; /* 下に2項目分(36px * 2)空ける */
+      padding-top: 72px;
+      padding-bottom: 72px;
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
@@ -722,7 +797,7 @@
     }
 
     /* ==========================================
-       6. ストライク・スペア演出アニメーション
+       7. ストライク・スペア演出アニメーション
        ========================================== */
     .effect-overlay {
       position: fixed;
@@ -848,7 +923,7 @@
 
   <!-- メインコンテンツ -->
   <main>
-    <!-- スコア表 -->
+    <!-- 上部/左部: スコア表 -->
     <section class="score-section">
       <div class="score-table-wrapper">
         <table class="score-table">
@@ -865,19 +940,70 @@
       </div>
     </section>
 
-    <!-- ルーレット -->
-    <section class="roulette-section">
-      <div class="roulette-title">🎰 選曲条件ルーレット</div>
+    <!-- 右部: スコア入力エリア -->
+    <section class="input-section">
       <div id="target-frame-display" class="target-frame-info">対象: 1曲目 - チーム1</div>
-      <div id="reel-window" class="reel-window">
-        <div id="reel-container" class="reel-container">
-          <div id="reel-text" class="reel-item">ボタンを押してルーレット回転</div>
+      
+      <div class="form-group">
+        <label>曲名 (任意):</label>
+        <input type="text" id="input-song-title" class="form-control" placeholder="例: 残響散歌">
+      </div>
+
+      <!-- 縦ホイール式ダイヤルUI -->
+      <div class="num-input-grid">
+        <div class="wheel-group">
+          <label class="wheel-label">素点</label>
+          <div class="wheel-container">
+            <div class="wheel-highlight"></div>
+            <div class="wheel-scroll" id="wheel-scroll-raw"></div>
+          </div>
+          <input type="hidden" id="input-raw-score" value="90">
+        </div>
+
+        <div class="wheel-group">
+          <label class="wheel-label">全国平均</label>
+          <div class="wheel-container">
+            <div class="wheel-highlight"></div>
+            <div class="wheel-scroll" id="wheel-scroll-avg"></div>
+          </div>
+          <input type="hidden" id="input-avg-score" value="85">
         </div>
       </div>
-      <button class="roulette-btn" onclick="spinRoulette()">ルーレットを回す</button>
-      <button class="reroll-btn" onclick="openRerollModal()">引き直し</button>
+
+      <button id="btn-save-score" class="btn btn-success save-btn" onclick="saveScoreInput()">セット</button>
     </section>
   </main>
+
+  <!-- 選曲条件フッター (70% : 15% : 15%) -->
+  <footer class="roulette-footer">
+    <div class="result-block">
+      <div id="result-ticker-wrapper" class="result-ticker-wrapper">
+        <div id="footer-condition-text" class="result-ticker-text">（条件未選択）</div>
+      </div>
+    </div>
+    <button class="roulette-btn" onclick="openAndSpinRoulette()">回す</button>
+    <button class="reroll-btn" onclick="openRerollModal()">引き直し</button>
+  </footer>
+</div>
+
+<!-- ルーレット用モーダル -->
+<div id="roulette-modal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 440px;">
+    <div class="modal-header">
+      <span>🎰 選曲条件ルーレット</span>
+      <span style="cursor:pointer;" onclick="closeModal('roulette-modal')">✕</span>
+    </div>
+    <div class="modal-body" style="padding: 20px 14px; text-align: center;">
+      <div id="reel-window" class="reel-window">
+        <div id="reel-container" class="reel-container">
+          <div id="reel-text" class="reel-item">ルーレット回転中...</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content: center;">
+      <button id="btn-modal-spin-close" class="btn btn-primary" style="width: 100%; padding: 8px; font-size: 0.9rem; display: none;" onclick="closeModal('roulette-modal')">確定</button>
+    </div>
+  </div>
 </div>
 
 <!-- モーダル群 -->
@@ -889,37 +1015,9 @@
     </div>
     <div class="modal-body">
       <div class="target-frame-info" id="modal-condition-preview">条件: なし</div>
-      <div class="form-group">
-        <label>曲名 (任意):</label>
-        <input type="text" id="input-song-title" class="form-control" placeholder="例: 残響散歌">
-      </div>
-      
-      <!-- 縦ホイール式ダイヤルUI -->
-      <div class="num-input-grid">
-        <div class="wheel-group">
-          <label class="wheel-label">素点</label>
-          <div class="wheel-container">
-            <div class="wheel-highlight"></div>
-            <div class="wheel-scroll" id="wheel-scroll-raw"></div>
-          </div>
-          <!-- 既存処理で値を読み書きするためのhidden要素 -->
-          <input type="hidden" id="input-raw-score" value="90">
-        </div>
-        
-        <div class="wheel-group">
-          <label class="wheel-label">全国平均</label>
-          <div class="wheel-container">
-            <div class="wheel-highlight"></div>
-            <div class="wheel-scroll" id="wheel-scroll-avg"></div>
-          </div>
-          <!-- 既存処理で値を読み書きするためのhidden要素 -->
-          <input type="hidden" id="input-avg-score" value="85">
-        </div>
-      </div>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeModal('score-modal')">キャンセル</button>
-      <button id="btn-save-score" class="btn btn-success" onclick="saveScoreInput()">セット</button>
+      <button class="btn" onclick="closeModal('score-modal')">閉じる</button>
     </div>
   </div>
 </div>
@@ -1162,6 +1260,7 @@
     await fetchConditions();
     loadState();
     renderApp();
+    syncInputFormWithActiveCell();
   });
 
   async function fetchConditions() {
@@ -1284,6 +1383,7 @@
     renderHeaderInfo();
     renderScoreTable();
     renderRouletteTarget();
+    updateFooterConditionDisplay();
     checkAutoFinished();
   }
 
@@ -1401,47 +1501,53 @@
     document.getElementById("target-frame-display").textContent = `対象: ${songIdx + 1}曲目 - ${teamName}`;
   }
 
+  function updateFooterConditionDisplay() {
+    const elem = document.getElementById("footer-condition-text");
+    const wrapper = document.getElementById("result-ticker-wrapper");
+    if (!elem || !wrapper) return;
+
+    const condText = gameState.currentCondition || "（条件未選択）";
+    elem.textContent = condText;
+
+    elem.classList.remove("scroll");
+    setTimeout(() => {
+      if (elem.scrollWidth > wrapper.clientWidth) {
+        elem.classList.add("scroll");
+      }
+    }, 50);
+  }
+
   function selectCell(teamIdx, songIdx) {
     gameState.activeCell = { teamIdx, songIdx };
     renderScoreTable();
     renderRouletteTarget();
-    openScoreModal();
+    syncInputFormWithActiveCell();
   }
 
-  function openScoreModal() {
+  function syncInputFormWithActiveCell() {
     const { teamIdx, songIdx } = gameState.activeCell;
-    const teamName = gameState.settings.teamNames[teamIdx] || `チーム${teamIdx + 1}`;
     const existing = gameState.scores[teamIdx][songIdx];
 
-    document.getElementById("modal-cell-title").textContent = `${teamName} - ${songIdx + 1}曲目の入力`;
-    
-    const condText = existing ? existing.condition : gameState.currentCondition;
-    document.getElementById("modal-condition-preview").textContent = `選曲条件: ${condText}`;
-
+    const titleInput = document.getElementById("input-song-title");
     const saveBtn = document.getElementById("btn-save-score");
 
     let initialRaw = 90;
     let initialAvg = 85;
 
     if (existing) {
-      document.getElementById("input-song-title").value = existing.title || "";
+      if (titleInput) titleInput.value = existing.title || "";
       initialRaw = Math.round(existing.rawScore);
       initialAvg = Math.round(existing.avgScore);
-      saveBtn.textContent = "更新";
+      if (saveBtn) saveBtn.textContent = "更新";
     } else {
-      document.getElementById("input-song-title").value = "";
+      if (titleInput) titleInput.value = "";
       initialRaw = 90;
       initialAvg = 85;
-      saveBtn.textContent = "セット";
+      if (saveBtn) saveBtn.textContent = "セット";
     }
 
-    openModal("score-modal");
-
-    // モーダル描画後にダイヤル位置を同期設定
-    setTimeout(() => {
-      setWheelValue('raw', initialRaw, false);
-      setWheelValue('avg', initialAvg, false);
-    }, 50);
+    setWheelValue('raw', initialRaw, false);
+    setWheelValue('avg', initialAvg, false);
   }
 
   function saveScoreInput() {
@@ -1469,10 +1575,10 @@
     const res = calculateFrameResult(teamIdx, songIdx);
 
     saveState();
-    closeModal("score-modal");
 
     advanceToNextUnfilledCell();
     renderApp();
+    syncInputFormWithActiveCell();
 
     if (res) {
       if (res.isStrike) {
@@ -1523,35 +1629,43 @@
 
   let isSpinning = false;
 
-  function runRouletteSpin(onComplete) {
+  function openAndSpinRoulette() {
+    openModal("roulette-modal");
+    runRouletteSpinInModal();
+  }
+
+  function runRouletteSpinInModal() {
     if (isSpinning) return;
     isSpinning = true;
 
     const reelWindow = document.getElementById("reel-window");
     const reelText = document.getElementById("reel-text");
-    reelWindow.classList.add("spinning");
+    const closeBtn = document.getElementById("btn-modal-spin-close");
+    if (closeBtn) closeBtn.style.display = "none";
+
+    if (reelWindow) reelWindow.classList.add("spinning");
 
     let counter = 0;
     const interval = setInterval(() => {
       const randomItem = conditionsList[Math.floor(Math.random() * conditionsList.length)];
-      reelText.textContent = randomItem;
+      if (reelText) reelText.textContent = randomItem;
       counter++;
       if (counter > 20) {
         clearInterval(interval);
-        reelWindow.classList.remove("spinning");
+        if (reelWindow) reelWindow.classList.remove("spinning");
         const finalSelected = conditionsList[Math.floor(Math.random() * conditionsList.length)];
-        reelText.textContent = finalSelected;
+        if (reelText) reelText.textContent = finalSelected;
         gameState.currentCondition = finalSelected;
         isSpinning = false;
         saveState();
         renderApp();
-        if (onComplete) onComplete();
+
+        if (closeBtn) closeBtn.style.display = "block";
+        setTimeout(() => {
+          closeModal("roulette-modal");
+        }, 1000);
       }
     }, 80);
-  }
-
-  function spinRoulette() {
-    runRouletteSpin();
   }
 
   function openRerollModal() {
@@ -1595,7 +1709,7 @@
 
     closeModal("reroll-modal");
 
-    runRouletteSpin();
+    openAndSpinRoulette();
   }
 
   function openSettingsModal() {
@@ -1697,6 +1811,7 @@
     saveState();
     closeModal("settings-modal");
     renderApp();
+    syncInputFormWithActiveCell();
   }
 
   function confirmClearScores() {
@@ -1704,6 +1819,7 @@
       initEmptyScores();
       saveState();
       renderApp();
+      syncInputFormWithActiveCell();
     }
   }
 
