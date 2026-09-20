@@ -569,6 +569,114 @@
         color: #000 !important;
       }
     }
+
+    /* ==========================================
+       6. ストライク・スペア演出アニメーション
+       ========================================== */
+    .effect-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.12) 0deg 10deg, transparent 10deg 20deg), rgba(0, 0, 0, 0.75);
+      transition: opacity 0.2s ease;
+    }
+
+    .effect-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .effect-burst {
+      position: absolute;
+      width: clamp(260px, 60vw, 420px);
+      height: clamp(180px, 45vh, 280px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-origin: center center;
+    }
+
+    .effect-text {
+      position: relative;
+      z-index: 2;
+      font-size: clamp(2.2rem, 8vw, 4.5rem);
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-align: center;
+      white-space: nowrap;
+      text-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    /* --- ストライク スタイル & アニメーション --- */
+    .effect-overlay.strike-anim .effect-burst {
+      background: linear-gradient(135deg, #ff0055 0%, #ffcc00 100%);
+      clip-path: polygon(50% 0%, 62% 14%, 80% 3%, 81% 22%, 99% 16%, 89% 34%, 100% 50%, 88% 66%, 97% 84%, 78% 79%, 74% 98%, 58% 86%, 45% 98%, 34% 84%, 17% 92%, 21% 74%, 2% 68%, 12% 51%, 0% 34%, 16% 25%, 9% 6%, 28% 15%);
+      filter: drop-shadow(0 0 20px rgba(255, 42, 95, 0.9));
+      animation: strikeBurst 3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .effect-overlay.strike-anim .effect-text {
+      color: #ffffff;
+      -webkit-text-stroke: 3px #8b0000;
+      animation: strikeText 3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes strikeBurst {
+      0% { transform: scale(4) rotate(-25deg) translate(-100vw, -100vh); opacity: 0; }
+      12% { transform: scale(0.85) rotate(4deg) translate(0, 0); opacity: 1; }
+      18% { transform: scale(1.1) rotate(-2deg); }
+      24% { transform: scale(1) rotate(0deg); }
+      75% { transform: scale(1.05) rotate(1deg); opacity: 1; }
+      100% { transform: scale(0) rotate(15deg); opacity: 0; }
+    }
+
+    @keyframes strikeText {
+      0% { transform: scale(4) rotate(-25deg) translate(-100vw, -100vh); opacity: 0; }
+      12% { transform: scale(0.85) rotate(4deg) translate(0, 0); opacity: 1; }
+      18% { transform: scale(1.15) rotate(-2deg); }
+      24% { transform: scale(1) rotate(0deg); }
+      75% { transform: scale(1.05) rotate(1deg); opacity: 1; }
+      100% { transform: scale(0) rotate(15deg); opacity: 0; }
+    }
+
+    /* --- スペア スタイル & アニメーション --- */
+    .effect-overlay.spare-anim .effect-burst {
+      background: linear-gradient(135deg, #00e676 0%, #cddc39 100%);
+      clip-path: polygon(50% 0%, 65% 10%, 85% 5%, 82% 25%, 100% 35%, 88% 52%, 98% 70%, 78% 75%, 70% 95%, 50% 85%, 30% 95%, 22% 75%, 2% 70%, 12% 52%, 0% 35%, 18% 25%, 15% 5%, 35% 10%);
+      filter: drop-shadow(0 0 20px rgba(52, 199, 89, 0.9));
+      animation: spareBurst 3s ease-in-out forwards;
+    }
+
+    .effect-overlay.spare-anim .effect-text {
+      color: #ffffff;
+      -webkit-text-stroke: 3px #1b5e20;
+      animation: spareText 3s ease-in-out forwards;
+    }
+
+    @keyframes spareBurst {
+      0% { transform: translateY(100vh) scale(0.3) rotate(15deg); opacity: 0; }
+      15% { transform: translateY(-15px) scale(1.1) rotate(-5deg); opacity: 1; }
+      25% { transform: translateY(0) scale(1) rotate(0deg); }
+      75% { transform: translateY(0) scale(1.03); opacity: 1; }
+      100% { transform: translateY(-100vh) scale(0.4) rotate(-10deg); opacity: 0; }
+    }
+
+    @keyframes spareText {
+      0% { transform: translateY(100vh) scale(0.3) rotate(15deg); opacity: 0; }
+      15% { transform: translateY(-15px) scale(1.1) rotate(-5deg); opacity: 1; }
+      25% { transform: translateY(0) scale(1) rotate(0deg); }
+      75% { transform: translateY(0) scale(1.03); opacity: 1; }
+      100% { transform: translateY(-100vh) scale(0.4) rotate(-10deg); opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -742,6 +850,12 @@
       <button class="btn" onclick="closeModal('result-modal')">閉じる</button>
     </div>
   </div>
+</div>
+
+<!-- 演出アニメーション用オーバーレイ -->
+<div id="effect-overlay" class="effect-overlay">
+  <div id="effect-burst" class="effect-burst"></div>
+  <div id="effect-text" class="effect-text"></div>
 </div>
 
 <!-- JavaScript スクリプト -->
@@ -1071,11 +1185,52 @@
       condition: conditionToSave
     };
 
+    // 現在のフレーム判定結果を取得
+    const res = calculateFrameResult(teamIdx, songIdx);
+
     saveState();
     closeModal("score-modal");
 
     advanceToNextUnfilledCell();
     renderApp();
+
+    // ストライクまたはスペア獲得時の演出アニメーション表示
+    if (res) {
+      if (res.isStrike) {
+        triggerEffect("strike");
+      } else if (res.isSpare) {
+        triggerEffect("spare");
+      }
+    }
+  }
+
+  let effectTimer = null;
+
+  function triggerEffect(type) {
+    const overlay = document.getElementById("effect-overlay");
+    const textElem = document.getElementById("effect-text");
+
+    if (!overlay || !textElem) return;
+
+    // タイマーとクラスの初期化（二重再生を防止）
+    clearTimeout(effectTimer);
+    overlay.className = "effect-overlay";
+
+    // リフロー強制でアニメーションを最初から再生
+    void overlay.offsetWidth;
+
+    if (type === "strike") {
+      textElem.textContent = "ストライク！";
+      overlay.classList.add("strike-anim", "active");
+    } else if (type === "spare") {
+      textElem.textContent = "スペア！";
+      overlay.classList.add("spare-anim", "active");
+    }
+
+    // 約3秒後に演出オーバーレイを消去して完全に元の状態に戻す
+    effectTimer = setTimeout(() => {
+      overlay.className = "effect-overlay";
+    }, 3000);
   }
 
   function advanceToNextUnfilledCell() {
@@ -1326,7 +1481,6 @@
         }
       }
 
-      // 素点平均のみ平均点なので小数点以下を表示を残す
       const avgRaw = filledSongs > 0 ? (totalRaw / filledSongs).toFixed(1) : "-";
       const penalty = gameState.rerollPenalties[t] || 0;
       const teamFinalTotalWithPenalty = teamFinalTotal + penalty;
@@ -1402,7 +1556,6 @@
     }
 
     const topScore = teamResults[0].score;
-    // 平均点なので小数点以下を表示を残す
     const avgAllTeams = sumAllTotal / teamCount;
 
     let html = "";
