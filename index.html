@@ -138,7 +138,7 @@
     .btn-success { background: #1b7a3e; border-color: var(--spare-color); }
 
     /* ==========================================
-       3. メインコンテンツ（スコア表 ＋ ルーレット）
+       3. メインコンテンツ (横画面デフォルト)
        ========================================== */
     main {
       flex: 1;
@@ -146,7 +146,7 @@
       grid-template-columns: 1fr 240px;
       gap: 8px;
       padding: 8px;
-      min-height: 0; /* フレックス/グリッドはみ出し防止 */
+      min-height: 0;
     }
 
     /* --- スコア表エリア --- */
@@ -357,7 +357,68 @@
     }
 
     /* ==========================================
-       4. モーダル / ダイアログ共通
+       4. 縦画面（Portrait）自動レイアウト切り替え
+       ========================================== */
+    @media (orientation: portrait) {
+      header {
+        height: auto;
+        padding: 6px 8px;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .logo {
+        font-size: 0.95rem;
+      }
+
+      .header-info {
+        gap: 6px;
+      }
+
+      .time-badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+      }
+
+      .btn {
+        padding: 4px 8px;
+        font-size: 0.72rem;
+      }
+
+      /* 左右2列から上下2段に変更 */
+      main {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 180px; /* 上:スコア表(可変), 下:ルーレット(180px) */
+        gap: 6px;
+        padding: 6px;
+      }
+
+      .roulette-section {
+        padding: 6px;
+        gap: 4px;
+      }
+
+      .roulette-title {
+        font-size: 0.7rem;
+      }
+
+      .target-frame-info {
+        font-size: 0.7rem;
+        padding: 2px 4px;
+      }
+
+      .reel-item {
+        font-size: 0.85rem;
+      }
+
+      .roulette-btn {
+        padding: 8px;
+        font-size: 0.82rem;
+      }
+    }
+
+    /* ==========================================
+       5. モーダル / ダイアログ共通
        ========================================== */
     .modal-overlay {
       position: fixed;
@@ -444,14 +505,12 @@
       border-color: var(--accent-cyan);
     }
 
-    /* キーパッド型入力 (ポップアップ用) */
     .num-input-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
 
-    /* 内訳表モーダル特有 */
     .breakdown-table {
       width: 100%;
       border-collapse: collapse;
@@ -469,7 +528,6 @@
       color: var(--accent-cyan);
     }
 
-    /* 印刷/PDF専用非表示エリア */
     #pdf-print-area {
       display: none;
     }
@@ -506,25 +564,24 @@
 
   <!-- メインコンテンツ -->
   <main>
-    <!-- 左側：スコア表 -->
+    <!-- スコア表 -->
     <section class="score-section">
       <div class="score-table-wrapper">
         <table class="score-table">
           <thead>
             <tr id="score-table-header">
               <th style="width: 80px;">チーム</th>
-              <!-- 動的に曲数分生成 -->
               <th style="width: 70px;">合計</th>
             </tr>
           </thead>
           <tbody id="score-table-body">
-            <!-- 動的にチーム分生成 -->
+            <!-- 動的に生成 -->
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- 右側：ルーレット -->
+    <!-- ルーレット -->
     <section class="roulette-section">
       <div class="roulette-title">🎰 選曲条件ルーレット</div>
       <div id="target-frame-display" class="target-frame-info">対象: 1曲目 - チーム1</div>
@@ -538,9 +595,7 @@
   </main>
 </div>
 
-<!-- ==========================================
-     モーダル: 点数入力
-     ========================================== -->
+<!-- モーダル群 -->
 <div id="score-modal" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header">
@@ -571,9 +626,6 @@
   </div>
 </div>
 
-<!-- ==========================================
-     モーダル: 設定
-     ========================================== -->
 <div id="settings-modal" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header">
@@ -591,9 +643,7 @@
           <input type="number" id="setting-song-count" class="form-control" min="1" max="10">
         </div>
       </div>
-      <div id="team-names-container" class="form-group">
-        <!-- 動的生成 -->
-      </div>
+      <div id="team-names-container" class="form-group"></div>
       <hr style="border-color: var(--border-color);">
       <div style="font-weight: bold; color: var(--accent-cyan); margin-top:4px;">ルール詳細設定</div>
       <div class="form-group">
@@ -618,18 +668,13 @@
   </div>
 </div>
 
-<!-- ==========================================
-     モーダル: 内訳
-     ========================================== -->
 <div id="breakdown-modal" class="modal-overlay">
   <div class="modal-content" style="max-width: 700px; width: 95%;">
     <div class="modal-header">
       <span>スコア詳細内訳</span>
       <span style="cursor:pointer;" onclick="closeModal('breakdown-modal')">✕</span>
     </div>
-    <div class="modal-body" id="breakdown-body">
-      <!-- 動的生成 -->
-    </div>
+    <div class="modal-body" id="breakdown-body"></div>
     <div class="modal-footer">
       <button class="btn btn-primary" onclick="exportPDF()">PDF出力シート生成</button>
       <button class="btn" onclick="closeModal('breakdown-modal')">閉じる</button>
@@ -637,18 +682,13 @@
   </div>
 </div>
 
-<!-- ==========================================
-     モーダル: 最終結果表示
-     ========================================== -->
 <div id="result-modal" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header">
       <span>🏆 最終計算結果</span>
       <span style="cursor:pointer;" onclick="closeModal('result-modal')">✕</span>
     </div>
-    <div class="modal-body" id="result-body">
-      <!-- 動的生成 -->
-    </div>
+    <div class="modal-body" id="result-body"></div>
     <div class="modal-footer">
       <button class="btn btn-success" onclick="exportPDF()">PDFスコア表を出力</button>
       <button class="btn" onclick="closeModal('result-modal')">閉じる</button>
@@ -656,16 +696,10 @@
   </div>
 </div>
 
-<!-- ==========================================
-     5. JavaScript アプリケーションロジック
-     ========================================== -->
+<!-- JavaScript スクリプト -->
 <script>
-  /* ------------------------------------------
-     状態管理 (State)
-     ------------------------------------------ */
   const STORAGE_KEY = "KARAOKE_BOWLING_DATA_V1";
 
-  // デフォルト選曲条件文 (conditions.html の読み込み失敗時フォールバック)
   const DEFAULT_CONDITIONS = [
     "「あ行」から始まるアーティストの曲",
     "アニメソング・特撮ソング",
@@ -690,16 +724,12 @@
       finalStrikeBonus: 2.0,
       finalSpareBonus: 1.5
     },
-    // scores[teamIdx][songIdx] = { rawScore, avgScore, title, condition }
     scores: [],
     currentCondition: "（条件未選択）",
     activeCell: { teamIdx: 0, songIdx: 0 },
     isFinished: false
   };
 
-  /* ------------------------------------------
-     初期化 & LocalStorage 処理
-     ------------------------------------------ */
   window.addEventListener("DOMContentLoaded", async () => {
     await fetchConditions();
     loadState();
@@ -749,22 +779,19 @@
     gameState.isFinished = false;
   }
 
-  /* ------------------------------------------
-     スコア計算コアロジック (仕様通り)
-     ------------------------------------------ */
   function calculateFrameResult(teamIdx, songIdx) {
     const frameData = gameState.scores[teamIdx][songIdx];
     if (!frameData) return null;
 
     const { rawScore, avgScore } = frameData;
-    const diff = rawScore - avgScore; // 平均差
+    const diff = rawScore - avgScore;
     const isStrike = rawScore >= 90.0;
     const isSpare = !isStrike && (diff >= gameState.settings.spareDiff);
 
     const isLastSong = (songIdx === gameState.settings.songCount - 1);
     const nextFrame = isLastSong ? null : gameState.scores[teamIdx][songIdx + 1];
 
-    let baseScore = rawScore + diff; // 基本点 = 素点 + 平均差
+    let baseScore = rawScore + diff;
     let bonus = 0;
     let isWaiting = false;
     let mark = "OPEN";
@@ -772,8 +799,6 @@
     if (isStrike) {
       mark = "STRIKE";
       if (isLastSong) {
-        // 最終曲ストライク: 素点 + 平均差 * 最終ストライク倍率
-        // ボーナス扱い = 小計 - 基本点
         const subtotal = rawScore + (diff * gameState.settings.finalStrikeBonus);
         bonus = subtotal - baseScore;
       } else {
@@ -787,7 +812,6 @@
     } else if (isSpare) {
       mark = "SPARE";
       if (isLastSong) {
-        // 最終曲スペア: 素点 + 平均差 * 最終スペア倍率
         const subtotal = rawScore + (diff * gameState.settings.finalSpareBonus);
         bonus = subtotal - baseScore;
       } else {
@@ -807,23 +831,11 @@
     const displayDiff = diff <= 0 ? "G" : (diff > 0 ? `+${diff.toFixed(2)}` : diff.toFixed(2));
 
     return {
-      rawScore,
-      avgScore,
-      diff,
-      displayDiff,
-      isStrike,
-      isSpare,
-      mark,
-      baseScore,
-      bonus,
-      subtotal,
-      isWaiting
+      rawScore, avgScore, diff, displayDiff,
+      isStrike, isSpare, mark, baseScore, bonus, subtotal, isWaiting
     };
   }
 
-  /* ------------------------------------------
-     描画レンダリング (UI & レスポンシブ)
-     ------------------------------------------ */
   function renderApp() {
     renderHeaderInfo();
     renderScoreTable();
@@ -862,7 +874,6 @@
     const headerRow = document.getElementById("score-table-header");
     const tbody = document.getElementById("score-table-body");
 
-    // ヘッダー構築
     let headerHTML = `<th style="width: 80px;">チーム</th>`;
     for (let s = 0; s < songCount; s++) {
       headerHTML += `<th>${s + 1}曲目</th>`;
@@ -870,12 +881,10 @@
     headerHTML += `<th style="width: 70px;">合計</th>`;
     headerRow.innerHTML = headerHTML;
 
-    // ボディ構築
     tbody.innerHTML = "";
     for (let t = 0; t < teamCount; t++) {
       const tr = document.createElement("tr");
 
-      // チーム名
       const teamTd = document.createElement("td");
       teamTd.className = "team-name-cell";
       teamTd.textContent = teamNames[t] || `チーム${t + 1}`;
@@ -883,7 +892,6 @@
 
       let teamTotalScore = 0;
 
-      // 各曲フレーム
       for (let s = 0; s < songCount; s++) {
         const td = document.createElement("td");
         td.className = "frame-cell";
@@ -929,7 +937,6 @@
         tr.appendChild(td);
       }
 
-      // 合計セル
       const totalTd = document.createElement("td");
       totalTd.className = "total-score-cell";
       totalTd.textContent = teamTotalScore.toFixed(1);
@@ -945,9 +952,6 @@
     document.getElementById("target-frame-display").textContent = `対象: ${songIdx + 1}曲目 - ${teamName}`;
   }
 
-  /* ------------------------------------------
-     セル選択 & スコア入力ダイアログ
-     ------------------------------------------ */
   function selectCell(teamIdx, songIdx) {
     gameState.activeCell = { teamIdx, songIdx };
     renderScoreTable();
@@ -962,7 +966,6 @@
 
     document.getElementById("modal-cell-title").textContent = `${teamName} - ${songIdx + 1}曲目の入力`;
     
-    // 条件文の表示
     const condText = existing ? existing.condition : gameState.currentCondition;
     document.getElementById("modal-condition-preview").textContent = `選曲条件: ${condText}`;
 
@@ -996,7 +999,6 @@
     const { teamIdx, songIdx } = gameState.activeCell;
     const existing = gameState.scores[teamIdx][songIdx];
 
-    // 新規セット時は現在のルーレット条件を保存、更新時は既存条件を維持
     const conditionToSave = existing ? existing.condition : gameState.currentCondition;
 
     gameState.scores[teamIdx][songIdx] = {
@@ -1009,7 +1011,6 @@
     saveState();
     closeModal("score-modal");
 
-    // 自動進行: 第1曲全チーム -> 第2曲全チーム ...
     advanceToNextUnfilledCell();
     renderApp();
   }
@@ -1026,9 +1027,6 @@
     }
   }
 
-  /* ------------------------------------------
-     ルーレット機能 (縦スロット風)
-     ------------------------------------------ */
   let isSpinning = false;
   function spinRoulette() {
     if (isSpinning) return;
@@ -1055,9 +1053,6 @@
     }, 80);
   }
 
-  /* ------------------------------------------
-     設定モーダル & 保存・検証 (仕様14対応)
-     ------------------------------------------ */
   function openSettingsModal() {
     const { teamCount, songCount, teamNames, spareDiff, finalStrikeBonus, finalSpareBonus } = gameState.settings;
 
@@ -1100,7 +1095,6 @@
     const nameInputs = document.querySelectorAll(".team-name-input");
     const newTeamNames = Array.from(nameInputs).map((inp, idx) => inp.value.trim() || `チーム${idx + 1}`);
 
-    // スコアが1つでも入力されているか確認
     let hasScores = false;
     for (let t = 0; t < gameState.scores.length; t++) {
       for (let s = 0; s < (gameState.scores[t] ? gameState.scores[t].length : 0); s++) {
@@ -1108,7 +1102,6 @@
       }
     }
 
-    // ルール設定項目の変更判定 (チーム名以外)
     const isRuleChanged =
       newTeamCount !== gameState.settings.teamCount ||
       newSongCount !== gameState.settings.songCount ||
@@ -1118,9 +1111,8 @@
 
     if (hasScores && isRuleChanged) {
       if (!confirm("入力されたスコアは消去されますがよろしいですか？")) {
-        return; // 「いいえ」で保持
+        return;
       }
-      // スコアデータ消去
       gameState.settings = {
         teamCount: newTeamCount,
         songCount: newSongCount,
@@ -1131,7 +1123,6 @@
       };
       initEmptyScores();
     } else {
-      // チーム名変更のみ、または未入力状態
       gameState.settings = {
         teamCount: newTeamCount,
         songCount: newSongCount,
@@ -1140,7 +1131,6 @@
         finalStrikeBonus: newFinalStrike,
         finalSpareBonus: newFinalSpare
       };
-      // サイズが変わっていれば配列再構成
       if (gameState.scores.length !== newTeamCount || (gameState.scores[0] && gameState.scores[0].length !== newSongCount)) {
         initEmptyScores();
       }
@@ -1151,9 +1141,6 @@
     renderApp();
   }
 
-  /* ------------------------------------------
-     完全リセット (仕様15)
-     ------------------------------------------ */
   function confirmClearScores() {
     if (confirm("現在の全チーム・全曲の入力スコアを削除してリセットしますか？（設定は保持されます）")) {
       initEmptyScores();
@@ -1162,9 +1149,6 @@
     }
   }
 
-  /* ------------------------------------------
-     内訳表示モーダル (仕様10)
-     ------------------------------------------ */
   function openBreakdownModal() {
     const container = document.getElementById("breakdown-body");
     const { teamCount, songCount, teamNames } = gameState.settings;
@@ -1249,14 +1233,11 @@
     openModal("breakdown-modal");
   }
 
-  /* ------------------------------------------
-     全曲終了判定 & 最終結果表示 (仕様11)
-     ------------------------------------------ */
   function checkAutoFinished() {
     const { teamCount, songCount } = gameState.settings;
     for (let t = 0; t < teamCount; t++) {
       for (let s = 0; s < songCount; s++) {
-        if (!gameState.scores[t][s]) return; // 未入力あり
+        if (!gameState.scores[t][s]) return;
       }
     }
 
@@ -1271,7 +1252,6 @@
     const { teamCount, songCount, teamNames } = gameState.settings;
     const container = document.getElementById("result-body");
 
-    // チーム別スコア算出
     const teamResults = [];
     let sumAllTotal = 0;
 
@@ -1289,7 +1269,6 @@
       sumAllTotal += finalScore;
     }
 
-    // 順位付け (同点考慮)
     teamResults.sort((a, b) => b.score - a.score);
     let rank = 1;
     for (let i = 0; i < teamResults.length; i++) {
@@ -1340,9 +1319,6 @@
     openModal("result-modal");
   }
 
-  /* ------------------------------------------
-     PDF出力機能 (レトロボウリングシート風 - 仕様12)
-     ------------------------------------------ */
   function exportPDF() {
     const { teamCount, songCount, teamNames } = gameState.settings;
     const printArea = document.createElement("div");
@@ -1360,7 +1336,6 @@
       </div>
     `;
 
-    // チーム別テーブル
     for (let t = 0; t < teamCount; t++) {
       const tName = teamNames[t] || `チーム${t + 1}`;
       let totalScore = 0;
@@ -1371,14 +1346,7 @@
           <table style="width:100%; border-collapse:collapse; font-size:10px; border:1px solid #000;" border="1">
             <thead>
               <tr style="background:#eee;">
-                <th>曲</th>
-                <th>曲名</th>
-                <th>素点</th>
-                <th>平均</th>
-                <th>判定</th>
-                <th>基本点</th>
-                <th>ボーナス</th>
-                <th>小計</th>
+                <th>曲</th><th>曲名</th><th>素点</th><th>平均</th><th>判定</th><th>基本点</th><th>ボーナス</th><th>小計</th>
               </tr>
             </thead>
             <tbody>
@@ -1418,7 +1386,6 @@
 
     printArea.innerHTML = pdfHTML;
 
-    // html2pdf 設定 (A4縦・モノクロシート)
     const opt = {
       margin: 10,
       filename: `karaoke_bowling_${Date.now()}.pdf`,
@@ -1430,16 +1397,8 @@
     html2pdf().set(opt).from(printArea).save();
   }
 
-  /* ------------------------------------------
-     モーダルヘルパー
-     ------------------------------------------ */
-  function openModal(id) {
-    document.getElementById(id).classList.add("active");
-  }
-
-  function closeModal(id) {
-    document.getElementById(id).classList.remove("active");
-  }
+  function openModal(id) { document.getElementById(id).classList.add("active"); }
+  function closeModal(id) { document.getElementById(id).classList.remove("active"); }
 </script>
 </body>
 </html>
