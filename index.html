@@ -13,9 +13,10 @@
 
   <style>
     /* ==========================================
-       1. 基本設定・デンモク風ダークテーマ配色
+       1. 基本設定・カラーテーマ（ダーク/ライト）
        ========================================== */
     :root {
+      /* デフォルト（ダークモード） */
       --bg-color: #0b0d12;
       --card-bg: #161a22;
       --panel-bg: #1f2430;
@@ -30,10 +31,75 @@
       --strike-color: #ff3b30;
       --spare-color: #34c759;
       --open-color: #007aff;
+
+      /* UIパーツ別詳細カラー */
+      --header-bg-top: #242936;
+      --header-bg-bottom: #12151c;
+      --btn-bg: #2a3142;
+      --btn-text: #ffffff;
+      --btn-border: #404b63;
+      --th-bg: #10131a;
+      --team-bg: #1a202c;
+      --total-bg: #182232;
+      --frame-bg: #12151d;
+      --frame-active-bg: #252b3b;
+      --frame-filled-bg: #1a1e29;
+      --mark-bg: #232938;
+      --reel-bg: #000000;
+      --info-bg: #11151f;
+      --modal-head-bg: #12151c;
+      --input-bg: #0f1218;
+      --input-border: #333a4d;
+      --input-text: #ffffff;
+      --wheel-bg: #0d1017;
+      --wheel-near-color: #ffffff;
+      --summary-bg: #11141c;
+
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-right: env(safe-area-inset-right, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --safe-left: env(safe-area-inset-left, 0px);
+    }
+
+    [data-theme="light"] {
+      /* ライトモード */
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --panel-bg: #ffffff;
+      --accent-red: #e11d48;
+      --accent-yellow: #d97706;
+      --accent-gold: #b45309;
+      --accent-cyan: #0284c7;
+      --accent-orange: #ea580c;
+      --text-main: #1e293b;
+      --text-sub: #64748b;
+      --border-color: #cbd5e1;
+      --strike-color: #dc2626;
+      --spare-color: #16a34a;
+      --open-color: #2563eb;
+
+      /* UIパーツ別詳細カラー */
+      --header-bg-top: #e2e8f0;
+      --header-bg-bottom: #cbd5e1;
+      --btn-bg: #e2e8f0;
+      --btn-text: #1e293b;
+      --btn-border: #94a3b8;
+      --th-bg: #f8fafc;
+      --team-bg: #f1f5f9;
+      --total-bg: #e0f2fe;
+      --frame-bg: #ffffff;
+      --frame-active-bg: #bae6fd;
+      --frame-filled-bg: #f8fafc;
+      --mark-bg: #f1f5f9;
+      --reel-bg: #1e293b;
+      --info-bg: #e0f2fe;
+      --modal-head-bg: #e2e8f0;
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --input-text: #1e293b;
+      --wheel-bg: #f8fafc;
+      --wheel-near-color: #334155;
+      --summary-bg: #f8fafc;
     }
 
     * {
@@ -72,7 +138,7 @@
        ========================================== */
     header {
       height: 42px;
-      background: linear-gradient(180deg, #242936 0%, #12151c 100%);
+      background: linear-gradient(180deg, var(--header-bg-top) 0%, var(--header-bg-bottom) 100%);
       border-bottom: 2px solid var(--accent-red);
       display: flex;
       align-items: center;
@@ -115,9 +181,9 @@
     }
 
     .btn {
-      background: #2a3142;
-      color: #fff;
-      border: 1px solid #404b63;
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--btn-border);
       padding: 5px 12px;
       border-radius: 6px;
       font-size: 0.78rem;
@@ -134,10 +200,10 @@
       opacity: 0.8;
     }
 
-    .btn-danger { background: #8b0000; border-color: var(--accent-red); }
-    .btn-primary { background: #0055b8; border-color: var(--open-color); }
-    .btn-success { background: #1b7a3e; border-color: var(--spare-color); }
-    .btn-warning { background: #b75300; border-color: var(--accent-orange); }
+    .btn-danger { background: #8b0000; border-color: var(--accent-red); color: #fff; }
+    .btn-primary { background: #0055b8; border-color: var(--open-color); color: #fff; }
+    .btn-success { background: #1b7a3e; border-color: var(--spare-color); color: #fff; }
+    .btn-warning { background: #b75300; border-color: var(--accent-orange); color: #fff; }
 
     /* ==========================================
        3. メインコンテンツ (横画面デフォルト)
@@ -184,14 +250,14 @@
     }
 
     .score-table th {
-      background: #10131a;
+      background: var(--th-bg);
       color: var(--text-sub);
       font-size: 0.75rem;
       height: 24px;
     }
 
     .team-name-cell {
-      background: #1a202c;
+      background: var(--team-bg);
       font-weight: bold;
       font-size: 0.85rem;
       color: var(--accent-yellow);
@@ -200,7 +266,7 @@
     }
 
     .total-score-cell {
-      background: #182232;
+      background: var(--total-bg);
       color: var(--accent-cyan);
       font-size: 1.1rem;
       font-weight: 900;
@@ -209,7 +275,7 @@
 
     /* 1フレーム（1曲）のセル構造 */
     .frame-cell {
-      background: #12151d;
+      background: var(--frame-bg);
       cursor: pointer;
       position: relative;
       transition: background 0.2s;
@@ -217,11 +283,11 @@
 
     .frame-cell.active {
       outline: 2px solid var(--accent-yellow);
-      background: #252b3b !important;
+      background: var(--frame-active-bg) !important;
     }
 
     .frame-cell.filled {
-      background: #1a1e29;
+      background: var(--frame-filled-bg);
     }
 
     .frame-box {
@@ -233,7 +299,7 @@
 
     .frame-top {
       display: flex;
-      border-bottom: 1px dashed #2a3142;
+      border-bottom: 1px dashed var(--border-color);
       height: 50%;
       font-size: 0.7rem;
     }
@@ -248,8 +314,8 @@
 
     .mark-val {
       width: 50%;
-      background: #232938;
-      border-left: 1px solid #2a3142;
+      background: var(--mark-bg);
+      border-left: 1px solid var(--border-color);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -259,7 +325,7 @@
 
     .mark-strike { color: var(--accent-red); }
     .mark-spare { color: var(--spare-color); }
-    .mark-g { color: #888; }
+    .mark-g { color: var(--text-sub); }
 
     .frame-bottom {
       height: 50%;
@@ -298,7 +364,7 @@
     .reel-window {
       flex: 1;
       min-height: 40px;
-      background: #000;
+      background: var(--reel-bg);
       border: 2px solid var(--accent-red);
       border-radius: 6px;
       overflow: hidden;
@@ -306,7 +372,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: inset 0 0 10px rgba(255, 42, 95, 0.5);
+      box-shadow: inset 0 0 10px rgba(255, 42, 95, 0.3);
     }
 
     .reel-container {
@@ -337,7 +403,7 @@
       font-size: 0.75rem;
       text-align: center;
       color: var(--accent-cyan);
-      background: #11151f;
+      background: var(--info-bg);
       padding: 4px;
       border-radius: 4px;
     }
@@ -477,7 +543,7 @@
     }
 
     .modal-header {
-      background: #12151c;
+      background: var(--modal-head-bg);
       padding: 10px 16px;
       font-weight: bold;
       display: flex;
@@ -498,7 +564,7 @@
 
     .modal-footer {
       padding: 10px 14px;
-      background: #12151c;
+      background: var(--modal-head-bg);
       display: flex;
       justify-content: flex-end;
       gap: 8px;
@@ -517,9 +583,9 @@
     }
 
     .form-control {
-      background: #0f1218;
-      border: 1px solid #333a4d;
-      color: #fff;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--input-text);
       padding: 8px;
       border-radius: 6px;
       font-size: 0.9rem;
@@ -554,11 +620,11 @@
       position: relative;
       width: 100%;
       height: 180px; /* 36px * 5行 */
-      background: #0d1017;
+      background: var(--wheel-bg);
       border: 1px solid var(--border-color);
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.6);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
       touch-action: pan-y;
     }
 
@@ -618,7 +684,7 @@
     .wheel-item.near {
       opacity: 0.65;
       font-size: 1.05rem;
-      color: #ffffff;
+      color: var(--wheel-near-color);
     }
 
     .breakdown-table {
@@ -628,13 +694,13 @@
     }
 
     .breakdown-table th, .breakdown-table td {
-      border: 1px solid #333a4d;
+      border: 1px solid var(--border-color);
       padding: 4px 2px;
       text-align: center;
     }
 
     .breakdown-table th {
-      background: #12151c;
+      background: var(--modal-head-bg);
       color: var(--accent-cyan);
     }
 
@@ -769,7 +835,7 @@
 <div id="app-container">
   <!-- ヘッダー -->
   <header>
-    <div class="logo">🎤 丸美 カラオケボウリング</div>
+    <div class="logo">🎤 bowling カラオケボウリング</div>
     <div class="header-info">
       <div id="remaining-time" class="time-badge">残り -- フレーム (約--分)</div>
     </div>
@@ -875,7 +941,14 @@
           <input type="number" id="setting-song-count" class="form-control" min="1" max="10">
         </div>
       </div>
-      <div id="team-names-container" class="form-group"></div>
+      <div class="form-group" style="margin-top: 4px;">
+        <label>画面テーマ (配色):</label>
+        <select id="setting-theme" class="form-control">
+          <option value="dark">ダークモード</option>
+          <option value="light">ライトモード</option>
+        </select>
+      </div>
+      <div id="team-names-container" class="form-group" style="margin-top: 4px;"></div>
       <hr style="border-color: var(--border-color);">
       <div style="font-weight: bold; color: var(--accent-cyan); margin-top:4px;">ルール詳細設定</div>
       <div class="num-input-grid">
@@ -989,7 +1062,8 @@
       spareDiff: 6,
       rerollPenalty: -5,
       finalStrikeBonus: 2,
-      finalSpareBonus: 2
+      finalSpareBonus: 2,
+      theme: "dark"
     },
     scores: [],
     rerollPenalties: [0, 0],
@@ -1075,6 +1149,14 @@
     }
   }
 
+  /* ------------------------------------------
+     テーマ切り替え適用ロジック
+     ------------------------------------------ */
+  function applyTheme() {
+    const theme = (gameState.settings && gameState.settings.theme) ? gameState.settings.theme : "dark";
+    document.documentElement.setAttribute("data-theme", theme);
+  }
+
   window.addEventListener("DOMContentLoaded", async () => {
     initWheels();
     await fetchConditions();
@@ -1106,6 +1188,9 @@
         if (gameState.settings && gameState.settings.rerollPenalty === undefined) {
           gameState.settings.rerollPenalty = -5;
         }
+        if (gameState.settings && !gameState.settings.theme) {
+          gameState.settings.theme = "dark";
+        }
       } catch (e) {
         console.error("データ復元エラー", e);
         initEmptyScores();
@@ -1114,6 +1199,7 @@
       initEmptyScores();
     }
     ensureRerollPenalties();
+    applyTheme();
   }
 
   function ensureRerollPenalties() {
@@ -1513,7 +1599,7 @@
   }
 
   function openSettingsModal() {
-    const { teamCount, songCount, teamNames, spareDiff, rerollPenalty, finalStrikeBonus, finalSpareBonus } = gameState.settings;
+    const { teamCount, songCount, teamNames, spareDiff, rerollPenalty, finalStrikeBonus, finalSpareBonus, theme } = gameState.settings;
 
     document.getElementById("setting-team-count").value = teamCount;
     document.getElementById("setting-song-count").value = songCount;
@@ -1521,6 +1607,7 @@
     document.getElementById("setting-reroll-penalty").value = rerollPenalty !== undefined ? rerollPenalty : -5;
     document.getElementById("setting-final-strike").value = finalStrikeBonus;
     document.getElementById("setting-final-spare").value = finalSpareBonus;
+    document.getElementById("setting-theme").value = theme || "dark";
 
     renderTeamNameInputs(teamCount, teamNames);
 
@@ -1552,6 +1639,7 @@
     const newRerollPenalty = parseFloat(document.getElementById("setting-reroll-penalty").value);
     const newFinalStrike = parseFloat(document.getElementById("setting-final-strike").value);
     const newFinalSpare = parseFloat(document.getElementById("setting-final-spare").value);
+    const newTheme = document.getElementById("setting-theme").value || "dark";
 
     const nameInputs = document.querySelectorAll(".team-name-input");
     const newTeamNames = Array.from(nameInputs).map((inp, idx) => inp.value.trim() || `チーム${idx + 1}`);
@@ -1584,7 +1672,8 @@
         spareDiff: newSpareDiff,
         rerollPenalty: penaltyVal,
         finalStrikeBonus: newFinalStrike,
-        finalSpareBonus: newFinalSpare
+        finalSpareBonus: newFinalSpare,
+        theme: newTheme
       };
       initEmptyScores();
     } else {
@@ -1595,7 +1684,8 @@
         spareDiff: newSpareDiff,
         rerollPenalty: penaltyVal,
         finalStrikeBonus: newFinalStrike,
-        finalSpareBonus: newFinalSpare
+        finalSpareBonus: newFinalSpare,
+        theme: newTheme
       };
       if (gameState.scores.length !== newTeamCount || (gameState.scores[0] && gameState.scores[0].length !== newSongCount)) {
         initEmptyScores();
@@ -1603,6 +1693,7 @@
     }
 
     ensureRerollPenalties();
+    applyTheme();
     saveState();
     closeModal("settings-modal");
     renderApp();
@@ -1677,7 +1768,7 @@
           html += `
             <tr>
               <td>${s + 1}</td>
-              <td style="color:#666;">-</td>
+              <td style="color:var(--text-sub);">-</td>
               <td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td>
             </tr>
           `;
@@ -1691,13 +1782,13 @@
       html += `
           </tbody>
         </table>
-        <div style="display:flex; flex-direction:column; gap:4px; font-size:0.75rem; background:#11141c; padding:6px 8px; border-radius:4px; margin-top:4px;">
+        <div style="display:flex; flex-direction:column; gap:4px; font-size:0.75rem; background:var(--summary-bg); padding:6px 8px; border-radius:4px; margin-top:4px;">
           <div style="display:flex; justify-content:space-between;">
             <span>素点合計: <b>${Math.round(totalRaw)}点</b></span>
             <span>素点平均: <b>${avgRaw}点</b></span>
             <span>曲計算点合計: <b>${Math.round(teamFinalTotal)}点</b></span>
           </div>
-          <div style="display:flex; justify-content:space-between; border-top:1px dashed #2a3142; padding-top:4px; margin-top:2px;">
+          <div style="display:flex; justify-content:space-between; border-top:1px dashed var(--border-color); padding-top:4px; margin-top:2px;">
             <span>引き直しペナルティ: <b style="color:var(--accent-orange);">${penalty}点</b></span>
             <span>最終計算点: <b style="color:var(--accent-cyan); font-size:0.85rem;">${Math.round(teamFinalTotalWithPenalty)}点</b></span>
           </div>
