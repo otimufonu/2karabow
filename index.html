@@ -769,7 +769,7 @@
 <div id="app-container">
   <!-- ヘッダー -->
   <header>
-    <div class="logo">🎤丸美 カラオケボウリング</div>
+    <div class="logo">🎤 丸美 カラオケボウリング</div>
     <div class="header-info">
       <div id="remaining-time" class="time-badge">残り -- フレーム (約--分)</div>
     </div>
@@ -878,9 +878,15 @@
       <div id="team-names-container" class="form-group"></div>
       <hr style="border-color: var(--border-color);">
       <div style="font-weight: bold; color: var(--accent-cyan); margin-top:4px;">ルール詳細設定</div>
-      <div class="form-group">
-        <label>スペア判定差 (素点-平均 ≧ X):</label>
-        <input type="number" step="1" id="setting-spare-diff" class="form-control">
+      <div class="num-input-grid">
+        <div class="form-group">
+          <label>スペア判定差 (素点-平均 ≧ X):</label>
+          <input type="number" step="1" id="setting-spare-diff" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>引き直しペナルティ:</label>
+          <input type="number" step="1" id="setting-reroll-penalty" class="form-control">
+        </div>
       </div>
       <div class="num-input-grid">
         <div class="form-group">
@@ -907,8 +913,8 @@
       <span style="cursor:pointer;" onclick="closeModal('reroll-modal')">✕</span>
     </div>
     <div class="modal-body">
-      <div style="font-weight: bold; color: var(--accent-yellow); font-size: 0.95rem;">
-        引き直すと -2ポイントになりますがよろしいですか？
+      <div id="reroll-confirm-msg" style="font-weight: bold; color: var(--accent-yellow); font-size: 0.95rem;">
+        引き直すと -5ポイントになりますがよろしいですか？
       </div>
       <div class="form-group" style="margin-top: 8px;">
         <label>引き直すチームを選択してください:</label>
@@ -981,6 +987,7 @@
       songCount: 5,
       teamNames: ["チームA", "チームB"],
       spareDiff: 6,
+      rerollPenalty: -5,
       finalStrikeBonus: 2,
       finalSpareBonus: 2
     },
@@ -1096,6 +1103,9 @@
       try {
         const parsed = JSON.parse(saved);
         gameState = { ...gameState, ...parsed };
+        if (gameState.settings && gameState.settings.rerollPenalty === undefined) {
+          gameState.settings.rerollPenalty = -5;
+        }
       } catch (e) {
         console.error("データ復元エラー", e);
         initEmptyScores();
@@ -1461,6 +1471,13 @@
   function openRerollModal() {
     if (isSpinning) return;
     ensureRerollPenalties();
+
+    const penalty = gameState.settings.rerollPenalty !== undefined ? gameState.settings.rerollPenalty : -5;
+    const msgElem = document.getElementById("reroll-confirm-msg");
+    if (msgElem) {
+      msgElem.textContent = `引き直すと ${penalty}ポイントになりますがよろしいですか？`;
+    }
+
     const selectElem = document.getElementById("reroll-team-select");
     selectElem.innerHTML = "";
 
@@ -1486,7 +1503,9 @@
 
     ensureRerollPenalties();
 
-    gameState.rerollPenalties[selectedTeamIdx] = (gameState.rerollPenalties[selectedTeamIdx] || 0) - 2;
+    const penalty = gameState.settings.rerollPenalty !== undefined ? gameState.settings.rerollPenalty : -5;
+
+    gameState.rerollPenalties[selectedTeamIdx] = (gameState.rerollPenalties[selectedTeamIdx] || 0) + penalty;
 
     closeModal("reroll-modal");
 
@@ -1494,11 +1513,12 @@
   }
 
   function openSettingsModal() {
-    const { teamCount, songCount, teamNames, spareDiff, finalStrikeBonus, finalSpareBonus } = gameState.settings;
+    const { teamCount, songCount, teamNames, spareDiff, rerollPenalty, finalStrikeBonus, finalSpareBonus } = gameState.settings;
 
     document.getElementById("setting-team-count").value = teamCount;
     document.getElementById("setting-song-count").value = songCount;
     document.getElementById("setting-spare-diff").value = spareDiff;
+    document.getElementById("setting-reroll-penalty").value = rerollPenalty !== undefined ? rerollPenalty : -5;
     document.getElementById("setting-final-strike").value = finalStrikeBonus;
     document.getElementById("setting-final-spare").value = finalSpareBonus;
 
@@ -1529,6 +1549,7 @@
     const newTeamCount = parseInt(document.getElementById("setting-team-count").value);
     const newSongCount = parseInt(document.getElementById("setting-song-count").value);
     const newSpareDiff = parseFloat(document.getElementById("setting-spare-diff").value);
+    const newRerollPenalty = parseFloat(document.getElementById("setting-reroll-penalty").value);
     const newFinalStrike = parseFloat(document.getElementById("setting-final-strike").value);
     const newFinalSpare = parseFloat(document.getElementById("setting-final-spare").value);
 
@@ -1542,10 +1563,13 @@
       }
     }
 
+    const penaltyVal = isNaN(newRerollPenalty) ? -5 : newRerollPenalty;
+
     const isRuleChanged =
       newTeamCount !== gameState.settings.teamCount ||
       newSongCount !== gameState.settings.songCount ||
       newSpareDiff !== gameState.settings.spareDiff ||
+      penaltyVal !== gameState.settings.rerollPenalty ||
       newFinalStrike !== gameState.settings.finalStrikeBonus ||
       newFinalSpare !== gameState.settings.finalSpareBonus;
 
@@ -1558,6 +1582,7 @@
         songCount: newSongCount,
         teamNames: newTeamNames,
         spareDiff: newSpareDiff,
+        rerollPenalty: penaltyVal,
         finalStrikeBonus: newFinalStrike,
         finalSpareBonus: newFinalSpare
       };
@@ -1568,6 +1593,7 @@
         songCount: newSongCount,
         teamNames: newTeamNames,
         spareDiff: newSpareDiff,
+        rerollPenalty: penaltyVal,
         finalStrikeBonus: newFinalStrike,
         finalSpareBonus: newFinalSpare
       };
