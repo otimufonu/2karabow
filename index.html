@@ -666,90 +666,132 @@
       gap: 8px;
     }
 
-    /* --- 縦ホイール式ダイヤルUI (コンパクト調整) --- */
-    .wheel-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
+    /* ==========================================
+   点数入力ダイヤル
+   カチッと1点ずつ動く方式
+   ========================================== */
 
-    .wheel-label {
-      color: var(--text-sub);
-      font-size: 0.72rem;
-      font-weight: bold;
-    }
+.wheel-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
 
-    .wheel-container {
-      position: relative;
-      width: 100%;
-      height: 112px; /* 1項目28px × 4 = 112px */
-      background: var(--wheel-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      overflow: hidden;
-      box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
-      touch-action: pan-y;
-    }
+.wheel-label {
+  color: var(--text-sub);
+  font-size: 0.72rem;
+  font-weight: bold;
+}
 
-    .wheel-highlight {
-      position: absolute;
-      top: 42px; /* (112 - 28) / 2 = 42px */
-      left: 4px;
-      right: 4px;
-      height: 28px;
-      border-top: 2px solid var(--accent-cyan);
-      border-bottom: 2px solid var(--accent-cyan);
-      background: rgba(0, 229, 255, 0.08);
-      border-radius: 4px;
-      pointer-events: none;
-      z-index: 2;
-    }
+.wheel-container {
+  position: relative;
+  width: 100%;
+  height: 112px;
+  background: var(--wheel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
 
-    .wheel-scroll {
-      height: 100%;
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior-y: contain;
-      padding-top: 42px;
-      padding-bottom: 42px;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-    }
+  /* ブラウザのスクロール・横パンを完全に禁止 */
+  touch-action: none;
 
-    .wheel-scroll::-webkit-scrollbar {
-      display: none;
-    }
+  /* 指で触ったときの選択を禁止 */
+  user-select: none;
+  -webkit-user-select: none;
 
-    .wheel-item {
-      height: 28px;
-      line-height: 28px;
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--text-sub);
-      opacity: 0.35;
-      scroll-snap-align: center;
-      transition: opacity 0.1s ease, transform 0.1s ease, color 0.1s ease, font-size 0.1s ease;
-      cursor: pointer;
-      user-select: none;
-      -webkit-user-select: none;
-    }
+  /* iPhoneでのタッチ遅延を抑える */
+  -webkit-tap-highlight-color: transparent;
+}
 
-    .wheel-item.selected {
-      opacity: 1;
-      color: var(--accent-cyan);
-      font-size: 1.15rem;
-      font-weight: 900;
-      text-shadow: 0 0 6px rgba(0, 229, 255, 0.6);
-      transform: scale(1.1);
-    }
+/* 中央の選択位置 */
+.wheel-highlight {
+  position: absolute;
+  top: 42px;
+  left: 4px;
+  right: 4px;
+  height: 28px;
 
-    .wheel-item.near {
-      opacity: 0.65;
-      font-size: 0.92rem;
-      color: var(--wheel-near-color);
-    }
+  border-top: 2px solid var(--accent-cyan);
+  border-bottom: 2px solid var(--accent-cyan);
+
+  background: rgba(0, 229, 255, 0.08);
+  border-radius: 4px;
+
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 数字表示エリア */
+.wheel-scroll {
+  height: 100%;
+  width: 100%;
+
+  /* スクロールさせない */
+  overflow: hidden;
+
+  /* JSで数字を配置 */
+  position: relative;
+
+  padding: 0;
+}
+
+/* 数字 */
+.wheel-item {
+  position: absolute;
+
+  left: 0;
+  width: 100%;
+  height: 28px;
+  line-height: 28px;
+
+  text-align: center;
+  font-size: 0.8rem;
+
+  color: var(--text-sub);
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition:
+    transform 0.08s ease-out,
+    opacity 0.08s ease-out,
+    color 0.08s ease-out,
+    font-size 0.08s ease-out;
+
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 現在選択中 */
+.wheel-item.selected {
+  opacity: 1;
+  color: var(--accent-cyan);
+  font-size: 1.15rem;
+  font-weight: 900;
+
+  text-shadow: 0 0 6px rgba(0, 229, 255, 0.6);
+
+  z-index: 3;
+}
+
+/* 1つ上下 */
+.wheel-item.near {
+  opacity: 0.55;
+  font-size: 0.92rem;
+  color: var(--wheel-near-color);
+
+  z-index: 1;
+}
+
+/* さらに外側 */
+.wheel-item.far {
+  opacity: 0.18;
+  font-size: 0.78rem;
+
+  z-index: 0;
+}
 
     .breakdown-table {
       width: 100%;
@@ -1162,79 +1204,233 @@
   /* ------------------------------------------
      縦ホイール式ダイヤルUI制御ロジック (コンパクト化)
      ------------------------------------------ */
-  const WHEEL_MIN = 75;
-  const WHEEL_MAX = 100;
-  const WHEEL_ITEM_HEIGHT = 28; /* アイテム高さを28pxに縮小 */
+ /* ------------------------------------------
+   点数入力ダイヤル
+   「カチッ」と1点ずつ動く方式
+   ------------------------------------------ */
 
-  function initWheels() {
-    setupWheel('raw');
-    setupWheel('avg');
+const WHEEL_MIN = 75;
+const WHEEL_MAX = 100;
+const WHEEL_ITEM_HEIGHT = 28;
+
+/* これだけ指を動かしたら1点進む */
+const WHEEL_STEP_DISTANCE = 18;
+
+const wheelState = {
+  raw: {
+    value: 90,
+    startY: 0,
+    lastY: 0,
+    accumulated: 0,
+    dragging: false
+  },
+  avg: {
+    value: 85,
+    startY: 0,
+    lastY: 0,
+    accumulated: 0,
+    dragging: false
+  }
+};
+
+function initWheels() {
+  setupWheel("raw");
+  setupWheel("avg");
+}
+
+function setupWheel(type) {
+  const container = document.getElementById(`wheel-scroll-${type}`);
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  for (let val = WHEEL_MIN; val <= WHEEL_MAX; val++) {
+    const item = document.createElement("div");
+
+    item.className = "wheel-item";
+    item.dataset.value = val;
+    item.textContent = val;
+
+    container.appendChild(item);
   }
 
-  function setupWheel(type) {
-    const scrollContainer = document.getElementById(`wheel-scroll-${type}`);
-    if (!scrollContainer) return;
-    scrollContainer.innerHTML = "";
+  const state = wheelState[type];
 
-    for (let val = WHEEL_MIN; val <= WHEEL_MAX; val++) {
-      const item = document.createElement("div");
-      item.className = "wheel-item";
-      item.dataset.value = val;
-      item.textContent = val;
-      item.onclick = () => {
-        setWheelValue(type, val, true);
-      };
-      scrollContainer.appendChild(item);
+  /* タッチ開始 */
+  container.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+    state.dragging = true;
+    state.startY = e.clientY;
+    state.lastY = e.clientY;
+    state.accumulated = 0;
+
+    container.setPointerCapture(e.pointerId);
+
+    e.preventDefault();
+  });
+
+  /* 指を動かす */
+  container.addEventListener("pointermove", (e) => {
+    if (!state.dragging) return;
+
+    const deltaY = e.clientY - state.lastY;
+
+    state.lastY = e.clientY;
+    state.accumulated += deltaY;
+
+    /*
+      上に動かす → 点数アップ
+      下に動かす → 点数ダウン
+    */
+
+    while (state.accumulated <= -WHEEL_STEP_DISTANCE) {
+      changeWheelValue(type, 1);
+      state.accumulated += WHEEL_STEP_DISTANCE;
     }
 
-    scrollContainer.addEventListener("scroll", () => handleWheelScroll(type), { passive: true });
-  }
-
-  function handleWheelScroll(type) {
-    const scrollContainer = document.getElementById(`wheel-scroll-${type}`);
-    const inputElem = document.getElementById(`input-${type}-score`);
-    if (!scrollContainer || !inputElem) return;
-
-    const scrollTop = scrollContainer.scrollTop;
-    let idx = Math.round(scrollTop / WHEEL_ITEM_HEIGHT);
-    idx = Math.max(0, Math.min(WHEEL_MAX - WHEEL_MIN, idx));
-
-    const selectedVal = WHEEL_MIN + idx;
-    inputElem.value = selectedVal;
-
-    const items = scrollContainer.querySelectorAll(".wheel-item");
-    items.forEach((item, index) => {
-      const diff = Math.abs(index - idx);
-      item.classList.remove("selected", "near");
-      if (diff === 0) {
-        item.classList.add("selected");
-      } else if (diff === 1) {
-        item.classList.add("near");
-      }
-    });
-  }
-
-  function setWheelValue(type, val, smooth = false) {
-    let num = parseInt(val, 10);
-    if (isNaN(num)) {
-      num = type === 'raw' ? 90 : 85;
+    while (state.accumulated >= WHEEL_STEP_DISTANCE) {
+      changeWheelValue(type, -1);
+      state.accumulated -= WHEEL_STEP_DISTANCE;
     }
-    num = Math.max(WHEEL_MIN, Math.min(WHEEL_MAX, num));
 
-    const scrollContainer = document.getElementById(`wheel-scroll-${type}`);
-    const inputElem = document.getElementById(`input-${type}-score`);
-    if (inputElem) inputElem.value = num;
+    e.preventDefault();
+  });
 
-    if (scrollContainer) {
-      const idx = num - WHEEL_MIN;
-      const targetTop = idx * WHEEL_ITEM_HEIGHT;
-      scrollContainer.scrollTo({
-        top: targetTop,
-        behavior: smooth ? "smooth" : "auto"
-      });
-      handleWheelScroll(type);
+  /* 指を離す */
+  const endDrag = (e) => {
+    if (!state.dragging) return;
+
+    state.dragging = false;
+    state.accumulated = 0;
+
+    try {
+      container.releasePointerCapture(e.pointerId);
+    } catch (_) {}
+
+    e.preventDefault();
+  };
+
+  container.addEventListener("pointerup", endDrag);
+  container.addEventListener("pointercancel", endDrag);
+
+  /*
+    タップで数字を直接選択する処理。
+    pointerdownからほとんど動かなかった場合のみ。
+  */
+  container.addEventListener("click", (e) => {
+    const rect = container.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+
+    /*
+      中央付近をタップした場合は現在値。
+      上側なら+1、下側なら-1。
+    */
+    const center = rect.height / 2;
+
+    if (y < center - 20) {
+      changeWheelValue(type, 1);
+    } else if (y > center + 20) {
+      changeWheelValue(type, -1);
     }
+  });
+
+  renderWheel(type);
+}
+
+/* ------------------------------------------
+   ダイヤルの点数を1点変更
+   ------------------------------------------ */
+
+function changeWheelValue(type, amount) {
+  const state = wheelState[type];
+
+  const oldValue = state.value;
+
+  state.value = Math.max(
+    WHEEL_MIN,
+    Math.min(WHEEL_MAX, state.value + amount)
+  );
+
+  if (state.value === oldValue) return;
+
+  const inputElem = document.getElementById(`input-${type}-score`);
+
+  if (inputElem) {
+    inputElem.value = state.value;
   }
+
+  renderWheel(type);
+
+  /*
+    iPhoneで「カチッ」という感触を出す。
+    対応していない環境では何もしない。
+  */
+  if (navigator.vibrate) {
+    navigator.vibrate(8);
+  }
+}
+
+/* ------------------------------------------
+   ダイヤル表示更新
+   ------------------------------------------ */
+
+function renderWheel(type) {
+  const container = document.getElementById(`wheel-scroll-${type}`);
+  const state = wheelState[type];
+
+  if (!container) return;
+
+  const items = container.querySelectorAll(".wheel-item");
+
+  items.forEach((item) => {
+    const val = parseInt(item.dataset.value, 10);
+    const diff = val - state.value;
+
+    item.classList.remove("selected", "near", "far");
+
+    /*
+      中央を112pxの中央に固定。
+      前後の数字だけ見える。
+    */
+    const centerY = 56;
+    const itemCenter = centerY + (diff * WHEEL_ITEM_HEIGHT);
+
+    item.style.top = `${itemCenter - WHEEL_ITEM_HEIGHT / 2}px`;
+
+    if (diff === 0) {
+      item.classList.add("selected");
+    } else if (Math.abs(diff) === 1) {
+      item.classList.add("near");
+    } else if (Math.abs(diff) === 2) {
+      item.classList.add("far");
+    }
+  });
+}
+
+/* ------------------------------------------
+   指定した数字へ移動
+   ------------------------------------------ */
+
+function setWheelValue(type, val, smooth = false) {
+  let num = parseInt(val, 10);
+
+  if (isNaN(num)) {
+    num = type === "raw" ? 90 : 85;
+  }
+
+  num = Math.max(WHEEL_MIN, Math.min(WHEEL_MAX, num));
+
+  wheelState[type].value = num;
+
+  const inputElem = document.getElementById(`input-${type}-score`);
+
+  if (inputElem) {
+    inputElem.value = num;
+  }
+
+  renderWheel(type);
+}
 
   /* ------------------------------------------
      テーマ切り替え適用ロジック
