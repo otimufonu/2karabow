@@ -2356,290 +2356,221 @@ function setWheelValue(type, val, smooth = false) {
 
   /*
     ==========================================
-    PDF本体
+    PDF本体 (昭和ボウリング スコアシート風)
     ==========================================
   */
 
   const printArea = document.createElement("div");
 
-  printArea.style.padding = "20px";
-  printArea.style.fontFamily = "Arial, 'Noto Sans JP', sans-serif";
-  printArea.style.color = "#000";
+  printArea.style.padding = "15px";
+  printArea.style.fontFamily = "'Yu Mincho', 'Hiragino Mincho ProN', 'MS PMincho', serif";
+  printArea.style.color = "#111";
   printArea.style.background = "#fff";
   printArea.style.width = "100%";
+  printArea.style.boxSizing = "border-box";
 
-
-  const dateStr = new Date().toLocaleString("ja-JP");
+  const dateStr = new Date().toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 
 
   /*
-    ==========================================
-    タイトル
-    ==========================================
+    ------------------------------------------
+    1. ヘッダー（昭和レトロなスコアカード風）
+    ------------------------------------------
   */
 
   let pdfHTML = `
     <div style="
-      text-align:center;
-      border-bottom:2px solid #000;
-      padding-bottom:8px;
-      margin-bottom:14px;
+      border: 3px double #000;
+      padding: 10px;
+      margin-bottom: 12px;
+      position: relative;
     ">
-      <h1 style="
-        font-size:20px;
-        margin:0 0 4px 0;
+      <div style="
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        border-bottom: 2px solid #000;
+        padding-bottom: 6px;
+        margin-bottom: 8px;
       ">
-        KARAOKE BOWLING SCORE SHEET
-      </h1>
+        <div style="font-size: 10px; letter-spacing: 1px;">
+          OFFICIAL SCORE SHEET
+        </div>
+        <div style="
+          font-size: 22px;
+          font-weight: bold;
+          letter-spacing: 4px;
+          text-align: center;
+        ">
+          カラオケボウリング 成績表
+        </div>
+        <div style="font-size: 10px;">
+          発行日時: ${dateStr}
+        </div>
+      </div>
 
-      <div style="font-size:10px;">
-        出力日時: ${dateStr}
+      <div style="
+        display: flex;
+        justify-content: space-between;
+        font-size: 10px;
+      ">
+        <span>会場: カラオケルーム</span>
+        <span>参加チーム数: ${teamCount} チーム</span>
+        <span>総フレーム数: ${songCount} 曲</span>
       </div>
     </div>
   `;
 
 
   /*
-    ==========================================
-    最終結果
-    ==========================================
+    ------------------------------------------
+    2. 最終順位・成績表
+    ------------------------------------------
   */
 
   pdfHTML += `
     <div style="
-      border:2px solid #000;
-      margin-bottom:18px;
-      padding:10px;
+      border: 2px solid #000;
+      margin-bottom: 16px;
+      padding: 8px;
+      background-color: #fafafa;
     ">
-
       <div style="
-        text-align:center;
-        font-size:16px;
-        font-weight:bold;
-        margin-bottom:10px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        border-bottom: 1px solid #000;
+        padding-bottom: 4px;
+        margin-bottom: 8px;
       ">
-        🏆 最終結果
+        【 終 了 成 績 】
       </div>
 
       <div style="
-        text-align:center;
-        font-size:11px;
-        margin-bottom:10px;
+        text-align: right;
+        font-size: 10px;
+        margin-bottom: 6px;
       ">
-        全チーム平均点：
-        <b>${avgAllTeams.toFixed(1)}点</b>
+        全チーム平均点：<b>${avgAllTeams.toFixed(1)} 点</b>
       </div>
   `;
 
 
-  /*
-    ------------------------------------------
-    2チームの場合
-    ------------------------------------------
-  */
-
   if (teamCount === 2) {
-
     const first = teamResults[0];
     const second = teamResults[1];
-
     const isDraw = first.score === second.score;
     const diff = Math.abs(first.score - second.score);
 
     if (isDraw) {
-
       pdfHTML += `
         <div style="
-          text-align:center;
-          font-size:15px;
-          font-weight:bold;
-          margin:8px 0 12px 0;
+          text-align: center;
+          font-size: 14px;
+          font-weight: bold;
+          margin: 6px 0;
+          color: #a61c1c;
         ">
-          🤝 引き分け！
-        </div>
-
-        <div style="
-          text-align:center;
-          font-size:13px;
-          margin-bottom:8px;
-        ">
-          ${first.name}
-         　
-          <b>${Math.round(first.score)}点</b>
-        </div>
-
-        <div style="
-          text-align:center;
-          font-size:13px;
-        ">
-          ${second.name}
-         　
-          <b>${Math.round(second.score)}点</b>
+          《 引き分け (同点) 》
         </div>
       `;
-
     } else {
-
       pdfHTML += `
         <div style="
-          text-align:center;
-          font-size:15px;
-          font-weight:bold;
-          margin:8px 0 12px 0;
+          text-align: center;
+          font-size: 14px;
+          font-weight: bold;
+          margin: 6px 0;
         ">
-          👑 1位：${first.name}
-          （${Math.round(first.score)}点）
+          優勝：${first.name} （${Math.round(first.score)} 点）
         </div>
-
-        <table style="
-          width:100%;
-          border-collapse:collapse;
-          font-size:11px;
-        " border="1">
-
-          <thead>
-            <tr style="background:#eee;">
-              <th style="padding:5px;">順位</th>
-              <th style="padding:5px;">チーム名</th>
-              <th style="padding:5px;">最終点</th>
-              <th style="padding:5px;">1位差</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr>
-              <td style="text-align:center; padding:5px;">
-                <b>1位</b>
-              </td>
-
-              <td style="padding:5px;">
-                ${first.name}
-              </td>
-
-              <td style="
-                text-align:right;
-                padding:5px;
-                font-weight:bold;
-              ">
-                ${Math.round(first.score)}
-              </td>
-
-              <td style="
-                text-align:right;
-                padding:5px;
-              ">
-                -0
-              </td>
-            </tr>
-
-            <tr>
-              <td style="text-align:center; padding:5px;">
-                <b>2位</b>
-              </td>
-
-              <td style="padding:5px;">
-                ${second.name}
-              </td>
-
-              <td style="
-                text-align:right;
-                padding:5px;
-                font-weight:bold;
-              ">
-                ${Math.round(second.score)}
-              </td>
-
-              <td style="
-                text-align:right;
-                padding:5px;
-              ">
-                -${Math.round(diff)}
-              </td>
-            </tr>
-          </tbody>
-
-        </table>
       `;
     }
 
-  /*
-    ------------------------------------------
-    3チーム以上の場合
-    ------------------------------------------
-  */
+    pdfHTML += `
+      <table style="
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+        border: 1px solid #000;
+        text-align: center;
+      ">
+        <thead>
+          <tr style="background: #e0e0e0; border-bottom: 1px solid #000;">
+            <th style="padding: 4px; border-right: 1px solid #000; width: 15%;">順位</th>
+            <th style="padding: 4px; border-right: 1px solid #000; text-align: left;">チーム名</th>
+            <th style="padding: 4px; border-right: 1px solid #000; width: 20%;">最終点</th>
+            <th style="padding: 4px; width: 20%;">トップ差</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px dashed #666;">
+            <td style="padding: 4px; border-right: 1px solid #000; font-weight: bold;">第1位</td>
+            <td style="padding: 4px; border-right: 1px solid #000; text-align: left;">${first.name}</td>
+            <td style="padding: 4px; border-right: 1px solid #000; font-weight: bold; text-align: right;">${Math.round(first.score)}</td>
+            <td style="padding: 4px; text-align: right;">-</td>
+          </tr>
+          <tr>
+            <td style="padding: 4px; border-right: 1px solid #000; font-weight: bold;">第2位</td>
+            <td style="padding: 4px; border-right: 1px solid #000; text-align: left;">${second.name}</td>
+            <td style="padding: 4px; border-right: 1px solid #000; font-weight: bold; text-align: right;">${Math.round(second.score)}</td>
+            <td style="padding: 4px; text-align: right;">-${Math.round(diff)}</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
 
   } else {
 
     pdfHTML += `
       <table style="
-        width:100%;
-        border-collapse:collapse;
-        font-size:10px;
-      " border="1">
-
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+        border: 1px solid #000;
+      ">
         <thead>
-          <tr style="background:#eee;">
-            <th style="padding:5px;">順位</th>
-            <th style="padding:5px;">チーム名</th>
-            <th style="padding:5px;">最終点</th>
-            <th style="padding:5px;">1位差</th>
-            <th style="padding:5px;">平均差</th>
+          <tr style="background: #e0e0e0; border-bottom: 1px solid #000;">
+            <th style="padding: 4px; border-right: 1px solid #000; width: 10%; text-align: center;">順位</th>
+            <th style="padding: 4px; border-right: 1px solid #000; text-align: left;">チーム名</th>
+            <th style="padding: 4px; border-right: 1px solid #000; width: 18%; text-align: right;">最終点</th>
+            <th style="padding: 4px; border-right: 1px solid #000; width: 18%; text-align: right;">トップ差</th>
+            <th style="padding: 4px; width: 18%; text-align: right;">平均差</th>
           </tr>
         </thead>
-
         <tbody>
     `;
 
-    teamResults.forEach(item => {
-
-      const diffTop =
-        Math.round(topScore - item.score);
-
-      const diffAvg =
-        Math.round(item.score - avgAllTeams);
-
-      const avgDiffText =
-        diffAvg >= 0
-          ? `+${diffAvg}`
-          : `${diffAvg}`;
+    teamResults.forEach((item, index) => {
+      const diffTop = Math.round(topScore - item.score);
+      const diffAvg = Math.round(item.score - avgAllTeams);
+      const avgDiffText = diffAvg >= 0 ? `+${diffAvg}` : `${diffAvg}`;
+      const borderStyle = index === teamResults.length - 1 ? "" : "border-bottom: 1px dashed #666;";
 
       pdfHTML += `
-        <tr>
-
-          <td style="
-            text-align:center;
-            padding:5px;
-            font-weight:bold;
-          ">
-            ${item.rank}位
+        <tr style="${borderStyle}">
+          <td style="padding: 4px; border-right: 1px solid #000; text-align: center; font-weight: bold;">
+            第${item.rank}位
           </td>
-
-          <td style="padding:5px;">
+          <td style="padding: 4px; border-right: 1px solid #000;">
             ${item.name}
           </td>
-
-          <td style="
-            text-align:right;
-            padding:5px;
-            font-weight:bold;
-          ">
+          <td style="padding: 4px; border-right: 1px solid #000; text-align: right; font-weight: bold;">
             ${Math.round(item.score)}
           </td>
-
-          <td style="
-            text-align:right;
-            padding:5px;
-          ">
-            -${diffTop}
+          <td style="padding: 4px; border-right: 1px solid #000; text-align: right;">
+            ${diffTop === 0 ? "-" : `-${diffTop}`}
           </td>
-
-          <td style="
-            text-align:right;
-            padding:5px;
-          ">
+          <td style="padding: 4px; text-align: right;">
             ${avgDiffText}
           </td>
-
         </tr>
       `;
     });
@@ -2650,168 +2581,117 @@ function setWheelValue(type, val, smooth = false) {
     `;
   }
 
-
-  /*
-    最終結果ブロック終了
-  */
-
-  pdfHTML += `
-    </div>
-  `;
+  pdfHTML += `</div>`;
 
 
   /*
-    ==========================================
-    各チームの詳細スコア
-    ==========================================
+    ------------------------------------------
+    3. 各チームの詳細スコア（ボウリングスコア表風）
+    ------------------------------------------
   */
 
   for (let t = 0; t < teamCount; t++) {
-
-    const tName =
-      teamNames[t] || `チーム${t + 1}`;
-
+    const tName = teamNames[t] || `チーム${t + 1}`;
     let totalScore = 0;
 
     pdfHTML += `
       <div style="
-        margin-bottom:15px;
-        page-break-inside:avoid;
+        margin-bottom: 16px;
+        page-break-inside: avoid;
+        border: 1px solid #000;
+        padding: 6px;
       ">
-
         <div style="
-          font-weight:bold;
-          font-size:12px;
-          margin-bottom:4px;
+          display: flex;
+          justify-content: space-between;
+          border-bottom: 2px solid #000;
+          padding-bottom: 3px;
+          margin-bottom: 6px;
+          font-weight: bold;
+          font-size: 11px;
         ">
-          TEAM: ${tName}
+          <span>チーム名: 【 ${tName} 】</span>
+          <span>スコア明細</span>
         </div>
 
         <table style="
-          width:100%;
-          border-collapse:collapse;
-          font-size:10px;
-          border:1px solid #000;
-        " border="1">
-
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 9.5px;
+          border: 1px solid #000;
+        ">
           <thead>
-            <tr style="background:#eee;">
-              <th>曲</th>
-              <th>曲名</th>
-              <th>素点</th>
-              <th>平均</th>
-              <th>判定</th>
-              <th>基本点</th>
-              <th>ボーナス</th>
-              <th>小計</th>
+            <tr style="background: #eee; border-bottom: 1px solid #000;">
+              <th style="padding: 3px; border-right: 1px solid #000; width: 6%; text-align: center;">曲</th>
+              <th style="padding: 3px; border-right: 1px solid #000; text-align: left;">楽曲タイトル</th>
+              <th style="padding: 3px; border-right: 1px solid #000; width: 11%; text-align: right;">素点</th>
+              <th style="padding: 3px; border-right: 1px solid #000; width: 11%; text-align: right;">平均</th>
+              <th style="padding: 3px; border-right: 1px solid #000; width: 9%; text-align: center;">判定</th>
+              <th style="padding: 3px; border-right: 1px solid #000; width: 11%; text-align: right;">基本点</th>
+              <th style="padding: 3px; border-right: 1px solid #000; width: 11%; text-align: right;">加算点</th>
+              <th style="padding: 3px; width: 13%; text-align: right;">計</th>
             </tr>
           </thead>
-
           <tbody>
     `;
 
-
     for (let s = 0; s < songCount; s++) {
-
-      const res =
-        calculateFrameResult(t, s);
-
-      const data =
-        gameState.scores[t][s];
+      const res = calculateFrameResult(t, s);
+      const data = gameState.scores[t][s];
+      const isLast = s === songCount - 1;
+      const borderBottom = isLast ? "" : "border-bottom: 1px solid #ccc;";
 
       if (res && data) {
-
         totalScore += res.subtotal;
 
         pdfHTML += `
-          <tr>
-
-            <td style="text-align:center;">
-              ${s + 1}
-            </td>
-
-            <td>
-              ${data.title || "-"}
-            </td>
-
-            <td style="text-align:right;">
-              ${Math.round(res.rawScore)}
-            </td>
-
-            <td style="text-align:right;">
-              ${Math.round(res.avgScore)}
-            </td>
-
-            <td style="text-align:center;">
-              ${res.mark}
-            </td>
-
-            <td style="text-align:right;">
-              ${Math.round(res.baseScore)}
-            </td>
-
-            <td style="text-align:right;">
-              ${Math.round(res.bonus)}
-            </td>
-
-            <td style="text-align:right;">
-              <b>${Math.round(res.subtotal)}</b>
-            </td>
-
+          <tr style="${borderBottom}">
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: center;">${s + 1}</td>
+            <td style="padding: 3px; border-right: 1px solid #000;">${data.title || "-"}</td>
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">${Math.round(res.rawScore)}</td>
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">${Math.round(res.avgScore)}</td>
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: center; font-weight: bold;">[ ${res.mark} ]</td>
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">${Math.round(res.baseScore)}</td>
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">${Math.round(res.bonus)}</td>
+            <td style="padding: 3px; text-align: right; font-weight: bold;">${Math.round(res.subtotal)}</td>
           </tr>
         `;
-
       } else {
-
         pdfHTML += `
-          <tr>
-            <td style="text-align:center;">
-              ${s + 1}
-            </td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
-            <td>-</td>
+          <tr style="${borderBottom}">
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: center;">${s + 1}</td>
+            <td style="padding: 3px; border-right: 1px solid #000;">-</td>
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">-</td>
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">-</td>
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: center;">-</td>
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">-</td>
+            <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">-</td>
+            <td style="padding: 3px; text-align: right;">-</td>
           </tr>
         `;
       }
     }
 
-
-    const penalty =
-      gameState.rerollPenalties[t] || 0;
-
-    const finalScoreWithPenalty =
-      totalScore + penalty;
-
+    const penalty = gameState.rerollPenalties[t] || 0;
+    const finalScoreWithPenalty = totalScore + penalty;
 
     pdfHTML += `
           </tbody>
         </table>
 
         <div style="
-          display:flex;
-          justify-content:space-between;
-          font-weight:bold;
-          font-size:11px;
-          margin-top:4px;
+          display: flex;
+          justify-content: space-between;
+          font-weight: bold;
+          font-size: 10.5px;
+          margin-top: 6px;
+          padding: 2px 4px;
+          background-color: #f5f5f5;
+          border: 1px solid #000;
         ">
-
-          <span>
-            引き直しペナルティ:
-            ${penalty}点
-          </span>
-
-          <span>
-            合計スコア:
-            ${Math.round(finalScoreWithPenalty)}点
-          </span>
-
+          <span>減点（引き直しペナルティ）: ${penalty} 点</span>
+          <span>合計獲得得点: ${Math.round(finalScoreWithPenalty)} 点</span>
         </div>
-
       </div>
     `;
   }
@@ -2819,30 +2699,18 @@ function setWheelValue(type, val, smooth = false) {
 
   /*
     ==========================================
-    PDF生成
+    PDF生成実行
     ==========================================
   */
 
   printArea.innerHTML = pdfHTML;
 
   const opt = {
-    margin: 10,
-    filename: `karaoke_bowling_${Date.now()}.pdf`,
-
-    image: {
-      type: "jpeg",
-      quality: 0.98
-    },
-
-    html2canvas: {
-      scale: 2
-    },
-
-    jsPDF: {
-      unit: "mm",
-      format: "a4",
-      orientation: "portrait"
-    }
+    margin: [8, 8, 8, 8],
+    filename: `karaoke_bowling_score_${Date.now()}.pdf`,
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
   };
 
   html2pdf()
@@ -2850,6 +2718,7 @@ function setWheelValue(type, val, smooth = false) {
     .from(printArea)
     .save();
 }
+
 
   function openModal(id) { document.getElementById(id).classList.add("active"); }
   function closeModal(id) { document.getElementById(id).classList.remove("active"); }
