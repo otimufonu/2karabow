@@ -2295,87 +2295,561 @@ function setWheelValue(type, val, smooth = false) {
   }
 
   function exportPDF() {
-    ensureRerollPenalties();
-    const { teamCount, songCount, teamNames } = gameState.settings;
-    const printArea = document.createElement("div");
-    printArea.style.padding = "20px";
-    printArea.style.fontFamily = "monospace, sans-serif";
-    printArea.style.color = "#000";
-    printArea.style.background = "#fff";
+  ensureRerollPenalties();
 
-    const dateStr = new Date().toLocaleString("ja-JP");
+  const { teamCount, songCount, teamNames } = gameState.settings;
 
-    let pdfHTML = `
-      <div style="text-align:center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px;">
-        <h1 style="font-size:20px; margin:0;">KARAOKE BOWLING SCORE SHEET</h1>
-        <div style="font-size:10px;">出力日時: ${dateStr}</div>
+  /*
+    ==========================================
+    最終結果を計算
+    ==========================================
+  */
+
+  const teamResults = [];
+  let sumAllTotal = 0;
+
+  for (let t = 0; t < teamCount; t++) {
+    let finalScore = 0;
+
+    for (let s = 0; s < songCount; s++) {
+      const res = calculateFrameResult(t, s);
+      if (res) {
+        finalScore += res.subtotal;
+      }
+    }
+
+    const penalty = gameState.rerollPenalties[t] || 0;
+    finalScore += penalty;
+
+    teamResults.push({
+      teamIdx: t,
+      name: teamNames[t] || `チーム${t + 1}`,
+      score: finalScore
+    });
+
+    sumAllTotal += finalScore;
+  }
+
+  // 最終点の高い順
+  teamResults.sort((a, b) => b.score - a.score);
+
+  // 同点順位
+  let rank = 1;
+
+  for (let i = 0; i < teamResults.length; i++) {
+    if (
+      i > 0 &&
+      teamResults[i].score < teamResults[i - 1].score
+    ) {
+      rank = i + 1;
+    }
+
+    teamResults[i].rank = rank;
+  }
+
+  const topScore =
+    teamResults.length > 0 ? teamResults[0].score : 0;
+
+  const avgAllTeams =
+    teamCount > 0 ? sumAllTotal / teamCount : 0;
+
+
+  /*
+    ==========================================
+    PDF本体
+    ==========================================
+  */
+
+  const printArea = document.createElement("div");
+
+  printArea.style.padding = "20px";
+  printArea.style.fontFamily = "Arial, 'Noto Sans JP', sans-serif";
+  printArea.style.color = "#000";
+  printArea.style.background = "#fff";
+  printArea.style.width = "100%";
+
+
+  const dateStr = new Date().toLocaleString("ja-JP");
+
+
+  /*
+    ==========================================
+    タイトル
+    ==========================================
+  */
+
+  let pdfHTML = `
+    <div style="
+      text-align:center;
+      border-bottom:2px solid #000;
+      padding-bottom:8px;
+      margin-bottom:14px;
+    ">
+      <h1 style="
+        font-size:20px;
+        margin:0 0 4px 0;
+      ">
+        KARAOKE BOWLING SCORE SHEET
+      </h1>
+
+      <div style="font-size:10px;">
+        出力日時: ${dateStr}
       </div>
-    `;
+    </div>
+  `;
 
-    for (let t = 0; t < teamCount; t++) {
-      const tName = teamNames[t] || `チーム${t + 1}`;
-      let totalScore = 0;
+
+  /*
+    ==========================================
+    最終結果
+    ==========================================
+  */
+
+  pdfHTML += `
+    <div style="
+      border:2px solid #000;
+      margin-bottom:18px;
+      padding:10px;
+    ">
+
+      <div style="
+        text-align:center;
+        font-size:16px;
+        font-weight:bold;
+        margin-bottom:10px;
+      ">
+        🏆 最終結果
+      </div>
+
+      <div style="
+        text-align:center;
+        font-size:11px;
+        margin-bottom:10px;
+      ">
+        全チーム平均点：
+        <b>${avgAllTeams.toFixed(1)}点</b>
+      </div>
+  `;
+
+
+  /*
+    ------------------------------------------
+    2チームの場合
+    ------------------------------------------
+  */
+
+  if (teamCount === 2) {
+
+    const first = teamResults[0];
+    const second = teamResults[1];
+
+    const isDraw = first.score === second.score;
+    const diff = Math.abs(first.score - second.score);
+
+    if (isDraw) {
 
       pdfHTML += `
-        <div style="margin-bottom:15px;">
-          <div style="font-weight:bold; font-size:12px;">TEAM: ${tName}</div>
-          <table style="width:100%; border-collapse:collapse; font-size:10px; border:1px solid #000;" border="1">
-            <thead>
-              <tr style="background:#eee;">
-                <th>曲</th><th>曲名</th><th>素点</th><th>平均</th><th>判定</th><th>基本点</th><th>ボーナス</th><th>小計</th>
-              </tr>
-            </thead>
-            <tbody>
+        <div style="
+          text-align:center;
+          font-size:15px;
+          font-weight:bold;
+          margin:8px 0 12px 0;
+        ">
+          🤝 引き分け！
+        </div>
+
+        <div style="
+          text-align:center;
+          font-size:13px;
+          margin-bottom:8px;
+        ">
+          ${first.name}
+         　
+          <b>${Math.round(first.score)}点</b>
+        </div>
+
+        <div style="
+          text-align:center;
+          font-size:13px;
+        ">
+          ${second.name}
+         　
+          <b>${Math.round(second.score)}点</b>
+        </div>
       `;
 
-      for (let s = 0; s < songCount; s++) {
-        const res = calculateFrameResult(t, s);
-        const data = gameState.scores[t][s];
-        if (res && data) {
-          totalScore += res.subtotal;
-          pdfHTML += `
-            <tr>
-              <td style="text-align:center;">${s + 1}</td>
-              <td>${data.title || "-"}</td>
-              <td style="text-align:right;">${Math.round(res.rawScore)}</td>
-              <td style="text-align:right;">${Math.round(res.avgScore)}</td>
-              <td style="text-align:center;">${res.mark}</td>
-              <td style="text-align:right;">${Math.round(res.baseScore)}</td>
-              <td style="text-align:right;">${Math.round(res.bonus)}</td>
-              <td style="text-align:right;"><b>${Math.round(res.subtotal)}</b></td>
-            </tr>
-          `;
-        } else {
-          pdfHTML += `<tr><td style="text-align:center;">${s + 1}</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
-        }
-      }
-
-      const penalty = gameState.rerollPenalties[t] || 0;
-      const finalScoreWithPenalty = totalScore + penalty;
+    } else {
 
       pdfHTML += `
-            </tbody>
-          </table>
-          <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:11px; margin-top:4px;">
-            <span>引き直しペナルティ: ${penalty}点</span>
-            <span>合計スコア: ${Math.round(finalScoreWithPenalty)}点</span>
-          </div>
+        <div style="
+          text-align:center;
+          font-size:15px;
+          font-weight:bold;
+          margin:8px 0 12px 0;
+        ">
+          👑 1位：${first.name}
+          （${Math.round(first.score)}点）
         </div>
+
+        <table style="
+          width:100%;
+          border-collapse:collapse;
+          font-size:11px;
+        " border="1">
+
+          <thead>
+            <tr style="background:#eee;">
+              <th style="padding:5px;">順位</th>
+              <th style="padding:5px;">チーム名</th>
+              <th style="padding:5px;">最終点</th>
+              <th style="padding:5px;">1位差</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td style="text-align:center; padding:5px;">
+                <b>1位</b>
+              </td>
+
+              <td style="padding:5px;">
+                ${first.name}
+              </td>
+
+              <td style="
+                text-align:right;
+                padding:5px;
+                font-weight:bold;
+              ">
+                ${Math.round(first.score)}
+              </td>
+
+              <td style="
+                text-align:right;
+                padding:5px;
+              ">
+                -0
+              </td>
+            </tr>
+
+            <tr>
+              <td style="text-align:center; padding:5px;">
+                <b>2位</b>
+              </td>
+
+              <td style="padding:5px;">
+                ${second.name}
+              </td>
+
+              <td style="
+                text-align:right;
+                padding:5px;
+                font-weight:bold;
+              ">
+                ${Math.round(second.score)}
+              </td>
+
+              <td style="
+                text-align:right;
+                padding:5px;
+              ">
+                -${Math.round(diff)}
+              </td>
+            </tr>
+          </tbody>
+
+        </table>
       `;
     }
 
-    printArea.innerHTML = pdfHTML;
+  /*
+    ------------------------------------------
+    3チーム以上の場合
+    ------------------------------------------
+  */
 
-    const opt = {
-      margin: 10,
-      filename: `karaoke_bowling_${Date.now()}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+  } else {
 
-    html2pdf().set(opt).from(printArea).save();
+    pdfHTML += `
+      <table style="
+        width:100%;
+        border-collapse:collapse;
+        font-size:10px;
+      " border="1">
+
+        <thead>
+          <tr style="background:#eee;">
+            <th style="padding:5px;">順位</th>
+            <th style="padding:5px;">チーム名</th>
+            <th style="padding:5px;">最終点</th>
+            <th style="padding:5px;">1位差</th>
+            <th style="padding:5px;">平均差</th>
+          </tr>
+        </thead>
+
+        <tbody>
+    `;
+
+    teamResults.forEach(item => {
+
+      const diffTop =
+        Math.round(topScore - item.score);
+
+      const diffAvg =
+        Math.round(item.score - avgAllTeams);
+
+      const avgDiffText =
+        diffAvg >= 0
+          ? `+${diffAvg}`
+          : `${diffAvg}`;
+
+      pdfHTML += `
+        <tr>
+
+          <td style="
+            text-align:center;
+            padding:5px;
+            font-weight:bold;
+          ">
+            ${item.rank}位
+          </td>
+
+          <td style="padding:5px;">
+            ${item.name}
+          </td>
+
+          <td style="
+            text-align:right;
+            padding:5px;
+            font-weight:bold;
+          ">
+            ${Math.round(item.score)}
+          </td>
+
+          <td style="
+            text-align:right;
+            padding:5px;
+          ">
+            -${diffTop}
+          </td>
+
+          <td style="
+            text-align:right;
+            padding:5px;
+          ">
+            ${avgDiffText}
+          </td>
+
+        </tr>
+      `;
+    });
+
+    pdfHTML += `
+        </tbody>
+      </table>
+    `;
   }
+
+
+  /*
+    最終結果ブロック終了
+  */
+
+  pdfHTML += `
+    </div>
+  `;
+
+
+  /*
+    ==========================================
+    各チームの詳細スコア
+    ==========================================
+  */
+
+  for (let t = 0; t < teamCount; t++) {
+
+    const tName =
+      teamNames[t] || `チーム${t + 1}`;
+
+    let totalScore = 0;
+
+    pdfHTML += `
+      <div style="
+        margin-bottom:15px;
+        page-break-inside:avoid;
+      ">
+
+        <div style="
+          font-weight:bold;
+          font-size:12px;
+          margin-bottom:4px;
+        ">
+          TEAM: ${tName}
+        </div>
+
+        <table style="
+          width:100%;
+          border-collapse:collapse;
+          font-size:10px;
+          border:1px solid #000;
+        " border="1">
+
+          <thead>
+            <tr style="background:#eee;">
+              <th>曲</th>
+              <th>曲名</th>
+              <th>素点</th>
+              <th>平均</th>
+              <th>判定</th>
+              <th>基本点</th>
+              <th>ボーナス</th>
+              <th>小計</th>
+            </tr>
+          </thead>
+
+          <tbody>
+    `;
+
+
+    for (let s = 0; s < songCount; s++) {
+
+      const res =
+        calculateFrameResult(t, s);
+
+      const data =
+        gameState.scores[t][s];
+
+      if (res && data) {
+
+        totalScore += res.subtotal;
+
+        pdfHTML += `
+          <tr>
+
+            <td style="text-align:center;">
+              ${s + 1}
+            </td>
+
+            <td>
+              ${data.title || "-"}
+            </td>
+
+            <td style="text-align:right;">
+              ${Math.round(res.rawScore)}
+            </td>
+
+            <td style="text-align:right;">
+              ${Math.round(res.avgScore)}
+            </td>
+
+            <td style="text-align:center;">
+              ${res.mark}
+            </td>
+
+            <td style="text-align:right;">
+              ${Math.round(res.baseScore)}
+            </td>
+
+            <td style="text-align:right;">
+              ${Math.round(res.bonus)}
+            </td>
+
+            <td style="text-align:right;">
+              <b>${Math.round(res.subtotal)}</b>
+            </td>
+
+          </tr>
+        `;
+
+      } else {
+
+        pdfHTML += `
+          <tr>
+            <td style="text-align:center;">
+              ${s + 1}
+            </td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+          </tr>
+        `;
+      }
+    }
+
+
+    const penalty =
+      gameState.rerollPenalties[t] || 0;
+
+    const finalScoreWithPenalty =
+      totalScore + penalty;
+
+
+    pdfHTML += `
+          </tbody>
+        </table>
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          font-weight:bold;
+          font-size:11px;
+          margin-top:4px;
+        ">
+
+          <span>
+            引き直しペナルティ:
+            ${penalty}点
+          </span>
+
+          <span>
+            合計スコア:
+            ${Math.round(finalScoreWithPenalty)}点
+          </span>
+
+        </div>
+
+      </div>
+    `;
+  }
+
+
+  /*
+    ==========================================
+    PDF生成
+    ==========================================
+  */
+
+  printArea.innerHTML = pdfHTML;
+
+  const opt = {
+    margin: 10,
+    filename: `karaoke_bowling_${Date.now()}.pdf`,
+
+    image: {
+      type: "jpeg",
+      quality: 0.98
+    },
+
+    html2canvas: {
+      scale: 2
+    },
+
+    jsPDF: {
+      unit: "mm",
+      format: "a4",
+      orientation: "portrait"
+    }
+  };
+
+  html2pdf()
+    .set(opt)
+    .from(printArea)
+    .save();
+}
 
   function openModal(id) { document.getElementById(id).classList.add("active"); }
   function closeModal(id) { document.getElementById(id).classList.remove("active"); }
