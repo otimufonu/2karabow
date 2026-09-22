@@ -166,16 +166,37 @@
       gap: 12px;
     }
 
-    .time-badge {
-      background: rgba(0, 229, 255, 0.15);
-      border: 1px solid var(--accent-cyan);
-      color: var(--accent-cyan);
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      font-weight: bold;
-    }
+  .time-badge {
+  background: rgba(0, 229, 255, 0.15);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  cursor: default;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
 
+/* 最終結果を表示できる状態 */
+.time-badge.result-ready {
+  background: rgba(52, 199, 89, 0.15);
+  border-color: var(--spare-color);
+  color: var(--spare-color);
+  cursor: pointer;
+}
+
+/* 押したとき */
+.time-badge.result-ready:active {
+  transform: scale(0.96);
+  opacity: 0.8;
+}
+
+/* 通常時の無効ボタン */
+.time-badge:disabled {
+  opacity: 1;
+}
     .header-btns {
       display: flex;
       gap: 6px;
@@ -943,7 +964,14 @@
   <header>
     <div class="logo">🎤 bowling カラオケボウリング</div>
     <div class="header-info">
-      <div id="remaining-time" class="time-badge">残り -- フレーム (約--分)</div>
+      <button
+  id="remaining-time"
+  class="time-badge"
+  onclick="openResultModal()"
+  disabled
+>
+  残り -- フレーム (約--分)
+</button>
     </div>
     <div class="header-btns">
       <button class="btn btn-danger" onclick="confirmClearScores()">クリア</button>
@@ -1573,30 +1601,42 @@ function setWheelValue(type, val, smooth = false) {
   }
 
   function renderHeaderInfo() {
-    const { teamCount, songCount } = gameState.settings;
-    let filledCount = 0;
-    const totalFrames = teamCount * songCount;
+  const { teamCount, songCount } = gameState.settings;
+  let filledCount = 0;
+  const totalFrames = teamCount * songCount;
 
-    for (let t = 0; t < teamCount; t++) {
-      for (let s = 0; s < songCount; s++) {
-        if (gameState.scores[t][s]) filledCount++;
-      }
-    }
-
-    const remainFrames = totalFrames - filledCount;
-    const remainElem = document.getElementById("remaining-time");
-
-    if (remainFrames === 0) {
-      remainElem.textContent = "入力完了";
-      remainElem.style.borderColor = "var(--spare-color)";
-      remainElem.style.color = "var(--spare-color)";
-    } else {
-      const remainMinutes = remainFrames * 4;
-      remainElem.textContent = `残り ${remainFrames} フレーム (約${remainMinutes}分)`;
-      remainElem.style.borderColor = "var(--accent-cyan)";
-      remainElem.style.color = "var(--accent-cyan)";
+  for (let t = 0; t < teamCount; t++) {
+    for (let s = 0; s < songCount; s++) {
+      if (gameState.scores[t][s]) filledCount++;
     }
   }
+
+  const remainFrames = totalFrames - filledCount;
+  const remainElem = document.getElementById("remaining-time");
+
+  if (!remainElem) return;
+
+  /*
+    全フレーム入力済み
+    → 「入力完了」ではなく
+      「最終結果を表示」に変更
+  */
+  if (remainFrames === 0) {
+    remainElem.textContent = "最終結果を表示";
+
+    remainElem.classList.add("result-ready");
+    remainElem.disabled = false;
+
+  } else {
+    const remainMinutes = remainFrames * 4;
+
+    remainElem.textContent =
+      `残り ${remainFrames} フレーム (約${remainMinutes}分)`;
+
+    remainElem.classList.remove("result-ready");
+    remainElem.disabled = true;
+  }
+}
 
   function renderScoreTable() {
     ensureRerollPenalties();
