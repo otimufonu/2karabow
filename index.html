@@ -1905,11 +1905,20 @@ function markConditionAsUsed(condition) {
     runRouletteSpinInModal();
   }
 
-  function runRouletteSpinInModal() {
+function runRouletteSpinInModal() {
   if (isSpinning) return;
+
+  // conditions.html で管理されている最新の条件を取得
+  conditionsList = fetchConditions();
+
+  if (!Array.isArray(conditionsList) || conditionsList.length === 0) {
+    alert("選曲条件が登録されていません。");
+    return;
+  }
 
   const usedConditions = loadUsedConditions();
 
+  // まだこのゲームで使っていない条件だけを抽選対象にする
   const availableConditions = conditionsList.filter(
     condition => !usedConditions.includes(condition)
   );
@@ -1921,62 +1930,78 @@ function markConditionAsUsed(condition) {
 
   isSpinning = true;
 
-    const reelWindow = document.getElementById("reel-window");
-    const reelText = document.getElementById("reel-text");
-    const closeBtn = document.getElementById("btn-modal-spin-close");
-    if (closeBtn) closeBtn.style.display = "none";
+  const reelWindow = document.getElementById("reel-window");
+  const reelText = document.getElementById("reel-text");
+  const closeBtn = document.getElementById("btn-modal-spin-close");
 
-    if (reelWindow) reelWindow.classList.add("spinning");
-
-    let counter = 0;
-    const interval = setInterval(() => {
-      const randomItem = conditionsList[Math.floor(Math.random() * conditionsList.length)];
-      if (reelText) reelText.textContent = randomItem;
-      counter++;
-
-      if (counter > 20) {
-        clearInterval(interval);
-        if (reelWindow) reelWindow.classList.remove("spinning");
-        const usedConditions = loadUsedConditions();
-
-const availableConditions = conditionsList.filter(
-  condition => !usedConditions.includes(condition)
-);
-
-if (availableConditions.length === 0) {
-  clearInterval(interval);
-  if (reelWindow) reelWindow.classList.remove("spinning");
-  isSpinning = false;
-
-  alert("このゲームで使用できる選曲条件がなくなりました。");
-  return;
-}
-
-const finalSelected =
-  availableConditions[Math.floor(Math.random() * availableConditions.length)];
-
-if (reelText) reelText.textContent = finalSelected;
-
-        ensureConditionsArrays();
-        if (currentSpinContext.mode === "base") {
-          gameState.frameConditions[currentSpinContext.songIdx] = finalSelected;
-        } else if (currentSpinContext.mode === "reroll") {
-          gameState.teamConditions[currentSpinContext.teamIdx][currentSpinContext.songIdx] = finalSelected;
-        }
-
-        gameState.currentCondition = finalSelected;
-
-// このゲームで使用済みとして即座に保存
-markConditionAsUsed(finalSelected);
-
-isSpinning = false;
-saveState();
-        renderApp();
-
-        if (closeBtn) closeBtn.style.display = "block";
-      }
-    }, 80);
+  if (closeBtn) {
+    closeBtn.style.display = "none";
   }
+
+  if (reelWindow) {
+    reelWindow.classList.add("spinning");
+  }
+
+  let counter = 0;
+
+  const interval = setInterval(() => {
+
+    // 回転中の表示だけ全条件からランダム表示
+    const randomItem =
+      conditionsList[
+        Math.floor(Math.random() * conditionsList.length)
+      ];
+
+    if (reelText) {
+      reelText.textContent = randomItem;
+    }
+
+    counter++;
+
+    if (counter > 20) {
+      clearInterval(interval);
+
+      if (reelWindow) {
+        reelWindow.classList.remove("spinning");
+      }
+
+      // 最終決定は「未使用条件」からのみ
+      const finalSelected =
+        availableConditions[
+          Math.floor(Math.random() * availableConditions.length)
+        ];
+
+      if (reelText) {
+        reelText.textContent = finalSelected;
+      }
+
+      ensureConditionsArrays();
+
+      if (currentSpinContext.mode === "base") {
+        gameState.frameConditions[currentSpinContext.songIdx] =
+          finalSelected;
+
+      } else if (currentSpinContext.mode === "reroll") {
+        gameState.teamConditions[currentSpinContext.teamIdx][currentSpinContext.songIdx] =
+          finalSelected;
+      }
+
+      gameState.currentCondition = finalSelected;
+
+      // このゲームでは使用済みにする
+      markConditionAsUsed(finalSelected);
+
+      isSpinning = false;
+
+      saveState();
+      renderApp();
+
+      if (closeBtn) {
+        closeBtn.style.display = "block";
+      }
+    }
+  }, 80);
+}
 
   function openRerollModal() {
     if (isSpinning) return;
