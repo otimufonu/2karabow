@@ -1341,23 +1341,86 @@
   });
 
   function fetchConditions() {
-  const saved = localStorage.getItem("KARAOKE_BOWLING_CONDITIONS_V1");
 
-  if (saved) {
     try {
-      const parsed = JSON.parse(saved);
 
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        conditionsList = parsed;
-        return;
-      }
-    } catch (e) {
-      console.error("選曲条件の読み込みエラー", e);
+        const saved =
+            localStorage.getItem(
+                "KARAOKE_BOWLING_CONDITIONS_V1"
+            );
+
+        if (!saved) {
+
+            return DEFAULT_CONDITIONS.slice();
+
+        }
+
+        const parsed =
+            JSON.parse(saved);
+
+
+        /*
+         * conditions.html形式
+         *
+         * {
+         *   version: 1,
+         *   categories: [
+         *     {
+         *       id: "...",
+         *       name: "...",
+         *       conditions: [...]
+         *     }
+         *   ]
+         * }
+         *
+         * から条件文だけを取り出す
+         */
+
+        if (
+            parsed &&
+            Array.isArray(parsed.categories)
+        ) {
+
+            const conditions =
+                parsed.categories.flatMap(
+                    category =>
+                        Array.isArray(category.conditions)
+                            ? category.conditions
+                            : []
+                )
+                .filter(
+                    condition =>
+                        typeof condition === "string" &&
+                        condition.trim() !== ""
+                );
+
+
+            if (conditions.length > 0) {
+
+                return conditions;
+
+            }
+
+        }
+
+
+        /*
+         * 想定外のデータだった場合は
+         * 初期条件に戻す
+         */
+
+        return DEFAULT_CONDITIONS.slice();
+
+    } catch (error) {
+
+        console.error(
+            "条件データの読み込みに失敗しました:",
+            error
+        );
+
+        return DEFAULT_CONDITIONS.slice();
+
     }
-  }
-
-  // localStorageにまだ保存されていない場合は初期条件を使用
-  conditionsList = [...DEFAULT_CONDITIONS];
 }
 
 function loadUsedConditions() {
