@@ -1155,7 +1155,7 @@
 
 <script>
   const STORAGE_KEY = "KARAOKE_BOWLING_DATA_V1";
-
+  const USED_CONDITIONS_KEY = "KARAOKE_BOWLING_USED_CONDITIONS_V1";
   const DEFAULT_CONDITIONS = [
     "「あ行」から始まるアーティストの曲",
     "アニメソング・特撮ソング",
@@ -1358,6 +1358,42 @@
 
   // localStorageにまだ保存されていない場合は初期条件を使用
   conditionsList = [...DEFAULT_CONDITIONS];
+}
+
+function loadUsedConditions() {
+  const saved = localStorage.getItem(USED_CONDITIONS_KEY);
+
+  if (!saved) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(saved);
+
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch (e) {
+    console.error("使用済み条件の読み込みエラー", e);
+  }
+
+  return [];
+}
+
+function saveUsedConditions(usedConditions) {
+  localStorage.setItem(
+    USED_CONDITIONS_KEY,
+    JSON.stringify(usedConditions)
+  );
+}
+
+function markConditionAsUsed(condition) {
+  const usedConditions = loadUsedConditions();
+
+  if (!usedConditions.includes(condition)) {
+    usedConditions.push(condition);
+    saveUsedConditions(usedConditions);
+  }
 }
 
   function loadState() {
@@ -1807,8 +1843,20 @@
   }
 
   function runRouletteSpinInModal() {
-    if (isSpinning) return;
-    isSpinning = true;
+  if (isSpinning) return;
+
+  const usedConditions = loadUsedConditions();
+
+  const availableConditions = conditionsList.filter(
+    condition => !usedConditions.includes(condition)
+  );
+
+  if (availableConditions.length === 0) {
+    alert("このゲームで使用できる選曲条件がなくなりました。");
+    return;
+  }
+
+  isSpinning = true;
 
     const reelWindow = document.getElementById("reel-window");
     const reelText = document.getElementById("reel-text");
@@ -1826,8 +1874,25 @@
       if (counter > 20) {
         clearInterval(interval);
         if (reelWindow) reelWindow.classList.remove("spinning");
-        const finalSelected = conditionsList[Math.floor(Math.random() * conditionsList.length)];
-        if (reelText) reelText.textContent = finalSelected;
+        const usedConditions = loadUsedConditions();
+
+const availableConditions = conditionsList.filter(
+  condition => !usedConditions.includes(condition)
+);
+
+if (availableConditions.length === 0) {
+  clearInterval(interval);
+  if (reelWindow) reelWindow.classList.remove("spinning");
+  isSpinning = false;
+
+  alert("このゲームで使用できる選曲条件がなくなりました。");
+  return;
+}
+
+const finalSelected =
+  availableConditions[Math.floor(Math.random() * availableConditions.length)];
+
+if (reelText) reelText.textContent = finalSelected;
 
         ensureConditionsArrays();
         if (currentSpinContext.mode === "base") {
@@ -1837,8 +1902,12 @@
         }
 
         gameState.currentCondition = finalSelected;
-        isSpinning = false;
-        saveState();
+
+// このゲームで使用済みとして即座に保存
+markConditionAsUsed(finalSelected);
+
+isSpinning = false;
+saveState();
         renderApp();
 
         if (closeBtn) closeBtn.style.display = "block";
@@ -2012,13 +2081,17 @@
   }
 
   function confirmClearScores() {
-    if (confirm("現在の全チーム・全曲の入力スコアを削除してリセットしますか？（設定は保持されます）")) {
-      initEmptyScores();
-      saveState();
-      renderApp();
-      syncInputFormWithActiveCell();
-    }
+  if (confirm("現在の全チーム・全曲の入力スコアを削除してリセットしますか？（設定は保持されます）")) {
+    initEmptyScores();
+
+    // 新しいゲームなので、使用済み条件もリセット
+    localStorage.removeItem(USED_CONDITIONS_KEY);
+
+    saveState();
+    renderApp();
+    syncInputFormWithActiveCell();
   }
+}
 
   function openBreakdownModal() {
     ensureRerollPenalties();
