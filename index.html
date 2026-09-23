@@ -1334,7 +1334,7 @@
 
   window.addEventListener("DOMContentLoaded", async () => {
     initWheels();
-    await fetchConditions();
+    conditionsList = await fetchConditions();
     loadState();
     renderApp();
     syncInputFormWithActiveCell();
