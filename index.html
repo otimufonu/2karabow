@@ -304,21 +304,23 @@
       height: 24px;
     }
 
-    .team-name-cell {
+       .team-name-cell {
       background: var(--team-bg);
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: clamp(0.7rem, 25cqh, 1.1rem);
       color: var(--accent-yellow);
       width: 90px;
       word-break: break-all;
+      container-type: size; /* ★枠サイズを判定基準にする */
     }
 
     .total-score-cell {
       background: var(--total-bg);
       color: var(--accent-cyan);
-      font-size: 1.1rem;
+      font-size: clamp(0.9rem, 45cqh, 1.8rem);
       font-weight: 900;
       width: 70px;
+      container-type: size; /* ★枠サイズを判定基準にする */
     }
 
     .frame-cell {
@@ -326,6 +328,7 @@
       cursor: pointer;
       position: relative;
       transition: background 0.2s;
+      container-type: size; /* ★追加：セル自体の縦横サイズをコンテナとして定義 */
     }
 
     .frame-cell.active {
@@ -348,7 +351,6 @@
       display: flex;
       border-bottom: 1px dashed var(--border-color);
       height: 50%;
-      font-size: 0.7rem;
     }
 
     .raw-score-val {
@@ -357,6 +359,7 @@
       align-items: center;
       justify-content: center;
       color: var(--text-sub);
+      font-size: clamp(0.6rem, 28cqh, 1.2rem); /* ★cqh単位に変更 */
     }
 
     .mark-val {
@@ -367,7 +370,7 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 0.75rem;
+      font-size: clamp(0.65rem, 32cqh, 1.3rem); /* ★cqh単位に変更 */
     }
 
     .mark-strike { color: var(--accent-red); }
@@ -380,14 +383,15 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: clamp(0.75rem, 40cqh, 1.6rem); /* ★cqh単位に変更 */
       color: var(--text-main);
     }
 
     .waiting-text {
-      font-size: 0.65rem;
+      font-size: clamp(0.55rem, 26cqh, 1rem); /* ★cqh単位に変更 */
       color: #e6a23c;
     }
+
 
     .input-section {
       background: var(--card-bg);
