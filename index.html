@@ -1954,11 +1954,11 @@ function markConditionAsUsed(condition) {
         strikeImg.src = "1.jpg";
         overlay.classList.add("strike-anim", "active");
 
-        // ① 0.1秒(100ms)ごとに 1.jpg と 2.jpg を交互に切り替え（2秒間）
+        // ① 0.08秒(80ms)ごとに 1.jpg と 2.jpg を交互に切り替え（2秒間）
         strikeInterval = setInterval(() => {
           isImage1 = !isImage1;
           strikeImg.src = isImage1 ? "1.jpg" : "2.jpg";
-        }, 100);
+        }, 80);
 
         // ② 2秒（2000ms）経過したらタイマーを止めて 3.jpg を表示
         setTimeout(() => {
