@@ -903,6 +903,29 @@
       75% { transform: translateY(0) scale(1.03); opacity: 1; }
       100% { transform: translateY(-100vh) scale(0.4) rotate(-10deg); opacity: 0; }
     }
+    
+        /* ストライク画像表示用のスタイル */
+    .strike-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain; /* 画像を切らずに画面いっぱいに収めます（隙間なく埋めたい場合は cover に変更） */
+      display: none;
+      z-index: 10;
+    }
+
+    /* ストライク演出中は画像を表示し、従来の吹き出しテキストを隠す */
+    .effect-overlay.strike-anim .strike-img {
+      display: block;
+    }
+    .effect-overlay.strike-anim .effect-burst,
+    .effect-overlay.strike-anim .effect-text {
+      display: none !important;
+    }
+
+    
   </style>
 </head>
 <body>
@@ -1149,9 +1172,11 @@
 
 <!-- 演出オーバーレイ -->
 <div id="effect-overlay" class="effect-overlay">
+  <img id="strike-img" class="strike-img" src="" alt="Strike Animation">
   <div id="effect-burst" class="effect-burst"></div>
   <div id="effect-text" class="effect-text"></div>
 </div>
+
 
 <script>
   const STORAGE_KEY = "KARAOKE_BOWLING_DATA_V1";
@@ -1906,30 +1931,57 @@ function markConditionAsUsed(condition) {
     }
   }
 
-  let effectTimer = null;
+    let effectTimer = null;
+  let strikeInterval = null; // ストライク画像切り替え用タイマー
 
   function triggerEffect(type) {
     const overlay = document.getElementById("effect-overlay");
     const textElem = document.getElementById("effect-text");
+    const strikeImg = document.getElementById("strike-img");
     if (!overlay || !textElem) return;
 
+    // 前回のタイマーをクリア
     clearTimeout(effectTimer);
+    if (strikeInterval) clearInterval(strikeInterval);
+
     overlay.className = "effect-overlay";
 
-    void overlay.offsetWidth;
+    void overlay.offsetWidth; // リフロー発生でアニメーションリセット
 
     if (type === "strike") {
-      textElem.textContent = "ストライク！";
-      overlay.classList.add("strike-anim", "active");
+      if (strikeImg) {
+        let isImage1 = true;
+        strikeImg.src = "1.jpg";
+        overlay.classList.add("strike-anim", "active");
+
+        // ① 0.1秒(100ms)ごとに 1.jpg と 2.jpg を交互に切り替え（2秒間）
+        strikeInterval = setInterval(() => {
+          isImage1 = !isImage1;
+          strikeImg.src = isImage1 ? "1.jpg" : "2.jpg";
+        }, 100);
+
+        // ② 2秒（2000ms）経過したらタイマーを止めて 3.jpg を表示
+        setTimeout(() => {
+          if (strikeInterval) clearInterval(strikeInterval);
+          strikeImg.src = "3.jpg";
+        }, 2000);
+
+        // ③ 3秒（3000ms）経過したら演出終了（通常画面へ）
+        effectTimer = setTimeout(() => {
+          overlay.className = "effect-overlay";
+        }, 3000);
+      }
     } else if (type === "spare") {
+      // スペア時は従来通りのアニメーション表示
       textElem.textContent = "スペア！";
       overlay.classList.add("spare-anim", "active");
-    }
 
-    effectTimer = setTimeout(() => {
-      overlay.className = "effect-overlay";
-    }, 3000);
+      effectTimer = setTimeout(() => {
+        overlay.className = "effect-overlay";
+      }, 3000);
+    }
   }
+
 
   function advanceToNextUnfilledCell() {
     const { teamCount, songCount } = gameState.settings;
