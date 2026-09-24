@@ -1943,13 +1943,24 @@ function markConditionAsUsed(condition) {
     renderApp();
     syncInputFormWithActiveCell();
 
-    if (res) {
+        if (res) {
       if (res.isStrike) {
-        triggerEffect("strike");
+        // 前の曲（songIdx - 1）が存在し、かつストライクだったか判定
+        let isConsecutive = false;
+        if (songIdx > 0) {
+          const prevRes = calculateFrameResult(teamIdx, songIdx - 1);
+          if (prevRes && prevRes.isStrike) {
+            isConsecutive = true;
+          }
+        }
+        
+        // 判定結果を第2引数に渡して呼び出す
+        triggerEffect("strike", isConsecutive);
       } else if (res.isSpare) {
         triggerEffect("spare");
       }
     }
+
   }
 
   let effectTimer = null;
