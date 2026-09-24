@@ -822,6 +822,19 @@
       opacity: 1;
       visibility: visible;
     }
+    
+        /* ストライク・スペア演出中は画像を表示し、従来のテキストを隠す */
+    .effect-overlay.strike-anim .strike-img,
+    .effect-overlay.spare-anim .strike-img {
+      display: block;
+    }
+    .effect-overlay.strike-anim .effect-burst,
+    .effect-overlay.strike-anim .effect-text,
+    .effect-overlay.spare-anim .effect-burst,
+    .effect-overlay.spare-anim .effect-text {
+      display: none !important;
+    }
+
 
     .effect-burst {
       position: absolute;
