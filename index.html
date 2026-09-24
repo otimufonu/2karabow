@@ -1674,7 +1674,7 @@ function markConditionAsUsed(condition) {
 
     const { rawScore, avgScore } = frameData;
     const diff = rawScore - avgScore;
-    const isStrike = rawScore >= 90;
+    const isStrike = rawScore >= 92;
     const isSpare = !isStrike && (diff >= gameState.settings.spareDiff);
 
     const isLastSong = (songIdx === gameState.settings.songCount - 1);
