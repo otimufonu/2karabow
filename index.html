@@ -1952,10 +1952,11 @@ function markConditionAsUsed(condition) {
     }
   }
 
-      let effectTimer = null;
+  let effectTimer = null;
   let strikeInterval = null;
 
-  function triggerEffect(type) {
+  // 第2引数 isConsecutive (true: 連続ストライク / false: 単発ストライク) を追加
+  function triggerEffect(type, isConsecutive = false) {
     const overlay = document.getElementById("effect-overlay");
     const textElem = document.getElementById("effect-text");
     const strikeImg = document.getElementById("strike-img");
@@ -1981,11 +1982,15 @@ function markConditionAsUsed(condition) {
           strikeImg.src = isImage1 ? "1.jpg" : "2.jpg";
         }, 100);
 
-        // ② 2秒経過：3.jpgに切り替えてガタガタ振動を開始
+        // ② 2秒経過：3.jpgに切り替え
         setTimeout(() => {
           if (strikeInterval) clearInterval(strikeInterval);
           strikeImg.src = "3.jpg";
-          strikeImg.classList.add("shake"); // 振動エフェクト付与
+
+          // 連続ストライク（isConsecutive が true）の時だけ振動クラスを追加
+          if (isConsecutive) {
+            strikeImg.classList.add("shake");
+          }
         }, 2000);
 
         // ③ 3秒経過：演出終了（画面を戻す & 振動を解除）
@@ -2003,6 +2008,7 @@ function markConditionAsUsed(condition) {
       }, 3000);
     }
   }
+
 
 
 
