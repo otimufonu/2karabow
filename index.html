@@ -2010,13 +2010,27 @@ function markConditionAsUsed(condition) {
           strikeImg.classList.remove("shake");
         }, 3000);
       }
-    } else if (type === "spare") {
-      textElem.textContent = "スペア！";
-      overlay.classList.add("spare-anim", "active");
+     } else if (type === "spare") {
+      if (strikeImg) {
+        // 4 -> 5 -> 6 -> 5 の順番でループさせると 4 -> 5 -> 6 -> 5 -> 4 ... と交互になる
+        const spareFrames = ["4.jpg", "5.jpg", "6.jpg", "5.jpg"];
+        let frameIndex = 0;
 
-      effectTimer = setTimeout(() => {
-        overlay.className = "effect-overlay";
-      }, 3000);
+        strikeImg.src = spareFrames[0];
+        overlay.classList.add("spare-anim", "active");
+
+        // ① 0.1秒(100ms)ごとに 4 -> 5 -> 6 -> 5 ... を順番に表示（3秒間）
+        animInterval = setInterval(() => {
+          frameIndex = (frameIndex + 1) % spareFrames.length;
+          strikeImg.src = spareFrames[frameIndex];
+        }, 100);
+
+        // ② 3秒（3000ms）経過したら演出終了
+        effectTimer = setTimeout(() => {
+          if (animInterval) clearInterval(animInterval);
+          overlay.className = "effect-overlay";
+        }, 3000);
+      }
     }
   }
 
