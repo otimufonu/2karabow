@@ -304,14 +304,14 @@
       height: 24px;
     }
 
-       .team-name-cell {
+    .team-name-cell {
       background: var(--team-bg);
       font-weight: bold;
       font-size: clamp(0.7rem, 25cqh, 1.1rem);
       color: var(--accent-yellow);
       width: 90px;
       word-break: break-all;
-      container-type: size; /* ★枠サイズを判定基準にする */
+      container-type: size;
     }
 
     .total-score-cell {
@@ -320,7 +320,7 @@
       font-size: clamp(0.9rem, 45cqh, 1.8rem);
       font-weight: 900;
       width: 70px;
-      container-type: size; /* ★枠サイズを判定基準にする */
+      container-type: size;
     }
 
     .frame-cell {
@@ -328,7 +328,7 @@
       cursor: pointer;
       position: relative;
       transition: background 0.2s;
-      container-type: size; /* ★追加：セル自体の縦横サイズをコンテナとして定義 */
+      container-type: size;
     }
 
     .frame-cell.active {
@@ -359,7 +359,7 @@
       align-items: center;
       justify-content: center;
       color: var(--text-sub);
-      font-size: clamp(0.6rem, 28cqh, 1.2rem); /* ★cqh単位に変更 */
+      font-size: clamp(0.6rem, 28cqh, 1.2rem);
     }
 
     .mark-val {
@@ -370,7 +370,7 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: clamp(0.65rem, 32cqh, 1.3rem); /* ★cqh単位に変更 */
+      font-size: clamp(0.65rem, 32cqh, 1.3rem);
     }
 
     .mark-strike { color: var(--accent-red); }
@@ -383,15 +383,14 @@
       align-items: center;
       justify-content: center;
       font-weight: bold;
-      font-size: clamp(0.75rem, 40cqh, 1.6rem); /* ★cqh単位に変更 */
+      font-size: clamp(0.75rem, 40cqh, 1.6rem);
       color: var(--text-main);
     }
 
     .waiting-text {
-      font-size: clamp(0.55rem, 26cqh, 1rem); /* ★cqh単位に変更 */
+      font-size: clamp(0.55rem, 26cqh, 1rem);
       color: #e6a23c;
     }
-
 
     .input-section {
       background: var(--card-bg);
@@ -826,8 +825,7 @@
       opacity: 1;
       visibility: visible;
     }
-    
-        /* ストライク・スペア演出中は画像を表示し、従来のテキストを隠す */
+
     .effect-overlay.strike-anim .strike-img,
     .effect-overlay.spare-anim .strike-img {
       display: block;
@@ -838,7 +836,6 @@
     .effect-overlay.spare-anim .effect-text {
       display: none !important;
     }
-
 
     .effect-burst {
       position: absolute;
@@ -920,20 +917,18 @@
       75% { transform: translateY(0) scale(1.03); opacity: 1; }
       100% { transform: translateY(-100vh) scale(0.4) rotate(-10deg); opacity: 0; }
     }
-    
-        /* ストライク画像表示用のスタイル */
+
     .strike-img {
       position: absolute;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      object-fit: contain; /* 画像を切らずに画面いっぱいに収めます（隙間なく埋めたい場合は cover に変更） */
+      object-fit: contain;
       display: none;
       z-index: 10;
     }
 
-    /* ストライク演出中は画像を表示し、従来の吹き出しテキストを隠す */
     .effect-overlay.strike-anim .strike-img {
       display: block;
     }
@@ -941,29 +936,24 @@
     .effect-overlay.strike-anim .effect-text {
       display: none !important;
     }
-/* -----------------------------------
-   画像振動（ガタガタ）アニメーション
------------------------------------ */
-@keyframes shake {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  10% { transform: translate(-8px, -5px) rotate(-1deg); }
-  20% { transform: translate(8px, 5px) rotate(1deg); }
-  30% { transform: translate(-8px, 5px) rotate(0deg); }
-  40% { transform: translate(8px, -5px) rotate(1deg); }
-  50% { transform: translate(-8px, -5px) rotate(-1deg); }
-  60% { transform: translate(8px, 5px) rotate(0deg); }
-  70% { transform: translate(-8px, 5px) rotate(-1deg); }
-  80% { transform: translate(8px, -5px) rotate(1deg); }
-  90% { transform: translate(-8px, -5px) rotate(0deg); }
-  100% { transform: translate(0, 0) rotate(0deg); }
-}
 
-/* 振動用クラス（0.08秒周期で無限ループ） */
-.strike-img.shake {
-  animation: shake 0.08s infinite;
-}
+    @keyframes shake {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      10% { transform: translate(-8px, -5px) rotate(-1deg); }
+      20% { transform: translate(8px, 5px) rotate(1deg); }
+      30% { transform: translate(-8px, 5px) rotate(0deg); }
+      40% { transform: translate(8px, -5px) rotate(1deg); }
+      50% { transform: translate(-8px, -5px) rotate(-1deg); }
+      60% { transform: translate(8px, 5px) rotate(0deg); }
+      70% { transform: translate(-8px, 5px) rotate(-1deg); }
+      80% { transform: translate(8px, -5px) rotate(1deg); }
+      90% { transform: translate(-8px, -5px) rotate(0deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
 
-    
+    .strike-img.shake {
+      animation: shake 0.08s infinite;
+    }
   </style>
 </head>
 <body>
@@ -978,6 +968,7 @@
       </button>
     </div>
     <div class="header-btns">
+      <button class="btn btn-warning" onclick="startBattle()">バトル</button>
       <button class="btn btn-danger" onclick="confirmClearScores()">クリア</button>
       <button class="btn" onclick="openSettingsModal()">設定</button>
       <button class="btn btn-primary" onclick="openBreakdownModal()">内訳</button>
@@ -1111,25 +1102,11 @@
       </div>
       <div id="team-names-container" class="form-group" style="margin-top: 4px;"></div>
       <hr style="border-color: var(--border-color);">
-    <div style="font-weight: bold; color: var(--accent-cyan); margin-top:4px;">
-  選曲条件
-</div>
-
-<button
-  type="button"
-  class="btn btn-primary"
-  style="width:100%; padding:8px; margin-top:4px;"
-  onclick="openConditionsEditor()"
->
-  🎰 選曲条件を編集
-</button>
-
-<div style="font-size:0.7rem; color:var(--text-sub); margin-top:2px;">
-  選曲条件の追加・編集・削除を行います。
-</div>
-
-<hr style="border-color: var(--border-color);">
-        <div style="font-weight: bold; color: var(--accent-cyan); margin-top:4px;">ルール詳細設定</div>
+      <div style="font-weight: bold; color: var(--accent-cyan); margin-top:4px;">選曲条件</div>
+      <button type="button" class="btn btn-primary" style="width:100%; padding:8px; margin-top:4px;" onclick="openConditionsEditor()">🎰 選曲条件を編集</button>
+      <div style="font-size:0.7rem; color:var(--text-sub); margin-top:2px;">選曲条件の追加・編集・削除を行います。</div>
+      <hr style="border-color: var(--border-color);">
+      <div style="font-weight: bold; color: var(--accent-cyan); margin-top:4px;">ルール詳細設定</div>
       <div class="num-input-grid">
         <div class="form-group">
           <label>スペア判定差 (素点-平均 ≧ X):</label>
@@ -1215,86 +1192,87 @@
   <div id="effect-text" class="effect-text"></div>
 </div>
 
-
 <script>
   const STORAGE_KEY = "KARAOKE_BOWLING_DATA_V1";
   const USED_CONDITIONS_KEY = "KARAOKE_BOWLING_USED_CONDITIONS_V1";
+  const BATTLE_DATA_KEY = "karaokeBowlingBattleData";
+  const BATTLE_RESULT_KEY = "karaokeBowlingBattleResult";
+
   const DEFAULT_CONDITIONS = [
     "自由！",
     "男性ボーカルの曲",
-"女性ボーカルの曲",
-"あ行から始まるアーティスト",
-"か行から始まるアーティスト",
-"さ行から始まるアーティスト",
-"た行から始まるアーティスト",
-"な行から始まるアーティスト",
-"は行から始まるアーティスト",
-"ま行から始まるアーティスト",
-"や行から始まるアーティスト",
-"ら行から始まるアーティスト",
-"わ行から始まるアーティスト",
-"アーティスト名が漢字から始まる",
-"アーティスト名がカタカナから始まる",
-"アーティスト名がひらがなから始まる",
-"アーティスト名がアルファベットから始まる",
-"アーティスト名が5文字以上",
-"アーティスト名が5文字以下",
-"アーティスト名が8文字以下",
-"ソロアーティスト",
-"男女混成グループ",
-"バンド",
-"アーティスト名に色が入っている",
-"ボカロ曲",
-"アイドル曲",
-"芸人もしくはYouTuberの曲",
-"あ行から始まる曲名",
-"か行から始まる曲名",
-"さ行から始まる曲名",
-"た行から始まる曲名",
-"な行から始まる曲名",
-"は行から始まる曲名",
-"ま行から始まる曲名",
-"や行から始まる曲名",
-"ら行から始まる曲名",
-"わ行から始まる曲名",
-"曲名が漢字のみ",
-"曲名がひらがなのみ",
-"曲名がカタカナのみ",
-"曲名がアルファベットのみ",
-"曲名に漢字を含む",
-"曲名に数字を含む",
-"曲名にアルファベットを含む",
-"曲名が5文字以上",
-"曲名が10文字以上",
-"曲名が5文字以下",
-"曲名が8文字以下",
-"曲名に「愛」が入っている",
-"曲名に「の」が入っている",
-"曲名に花の名前が入っている",
-"曲名に長音(ー)が入っている",
-"2000年代以前の曲",
-"2010年代以降の曲",
-"昭和の曲",
-"平成の曲",
-"令和の曲",
-"アニメの曲",
-"ドラマの曲",
-"映画の曲",
-"CMソング",
-"本人映像のみ",
-"歌詞に食べ物が出てくる",
-"歌詞に地名が出てくる",
-"歌詞に乗り物が出てくる",
-"日本語禁止！(歌詞)",
-"英文が含まれる歌詞",
-"英語禁止！(歌詞)",
-"月間DAMベスト50から",
-"なんでもランキング(盛り上がる曲)",
-"なんでもランキング(急上昇)",
-"なんでもランキング(歌いやすい曲)",
-"前の人の曲名としりとり",
-"前の人のアーティスト名としりとり"
-
+    "女性ボーカルの曲",
+    "あ行から始まるアーティスト",
+    "か行から始まるアーティスト",
+    "さ行から始まるアーティスト",
+    "た行から始まるアーティスト",
+    "な行から始まるアーティスト",
+    "は行から始まるアーティスト",
+    "ま行から始まるアーティスト",
+    "や行から始まるアーティスト",
+    "ら行から始まるアーティスト",
+    "わ行から始まるアーティスト",
+    "アーティスト名が漢字から始まる",
+    "アーティスト名がカタカナから始まる",
+    "アーティスト名がひらがなから始まる",
+    "アーティスト名がアルファベットから始まる",
+    "アーティスト名が5文字以上",
+    "アーティスト名が5文字以下",
+    "アーティスト名が8文字以下",
+    "ソロアーティスト",
+    "男女混成グループ",
+    "バンド",
+    "アーティスト名に色が入っている",
+    "ボカロ曲",
+    "アイドル曲",
+    "芸人もしくはYouTuberの曲",
+    "あ行から始まる曲名",
+    "か行から始まる曲名",
+    "さ行から始まる曲名",
+    "た行から始まる曲名",
+    "な行から始まる曲名",
+    "は行から始まる曲名",
+    "ま行から始まる曲名",
+    "や行から始まる曲名",
+    "ら行から始まる曲名",
+    "わ行から始まる曲名",
+    "曲名が漢字のみ",
+    "曲名がひらがなのみ",
+    "曲名がカタカナのみ",
+    "曲名がアルファベットのみ",
+    "曲名に漢字を含む",
+    "曲名に数字を含む",
+    "曲名にアルファベットを含む",
+    "曲名が5文字以上",
+    "曲名が10文字以上",
+    "曲名が5文字以下",
+    "曲名が8文字以下",
+    "曲名に「愛」が入っている",
+    "曲名に「の」が入っている",
+    "曲名に花の名前が入っている",
+    "曲名に長音(ー)が入っている",
+    "2000年代以前の曲",
+    "2010年代以降の曲",
+    "昭和の曲",
+    "平成の曲",
+    "令和の曲",
+    "アニメの曲",
+    "ドラマの曲",
+    "映画の曲",
+    "CMソング",
+    "本人映像のみ",
+    "歌詞に食べ物が出てくる",
+    "歌詞に地名が出てくる",
+    "歌詞に乗り物が出てくる",
+    "日本語禁止！(歌詞)",
+    "英文が含まれる歌詞",
+    "英語禁止！(歌詞)",
+    "月間DAMベスト50から",
+    "なんでもランキング(盛り上がる曲)",
+    "なんでもランキング(急上昇)",
+    "なんでもランキング(歌いやすい曲)",
+    "前の人の曲名としりとり",
+    "前の人のアーティスト名としりとり"
   ];
 
   let conditionsList = [...DEFAULT_CONDITIONS];
@@ -1312,15 +1290,15 @@
     },
     scores: [],
     rerollPenalties: [0, 0],
-    frameConditions: [], // フレームごとの基本（共通）条件
-    teamConditions: [],  // チーム別の個別条件 [teamIdx][songIdx]
+    frameConditions: [],
+    teamConditions: [],
     currentCondition: "（条件未選択）",
     activeCell: { teamIdx: 0, songIdx: 0 },
     isFinished: false
   };
 
   let currentSpinContext = {
-    mode: "base", // "base" (基本条件決定) または "reroll" (引き直し)
+    mode: "base",
     teamIdx: 0,
     songIdx: 0
   };
@@ -1464,128 +1442,54 @@
     initWheels();
     conditionsList = await fetchConditions();
     loadState();
+    checkBattleResult();
     renderApp();
     syncInputFormWithActiveCell();
   });
 
   function fetchConditions() {
-
     try {
-
-        const saved =
-            localStorage.getItem(
-                "KARAOKE_BOWLING_CONDITIONS_V1"
-            );
-
-        if (!saved) {
-
-            return DEFAULT_CONDITIONS.slice();
-
-        }
-
-        const parsed =
-            JSON.parse(saved);
-
-
-        /*
-         * conditions.html形式
-         *
-         * {
-         *   version: 1,
-         *   categories: [
-         *     {
-         *       id: "...",
-         *       name: "...",
-         *       conditions: [...]
-         *     }
-         *   ]
-         * }
-         *
-         * から条件文だけを取り出す
-         */
-
-        if (
-            parsed &&
-            Array.isArray(parsed.categories)
-        ) {
-
-            const conditions =
-                parsed.categories.flatMap(
-                    category =>
-                        Array.isArray(category.conditions)
-                            ? category.conditions
-                            : []
-                )
-                .filter(
-                    condition =>
-                        typeof condition === "string" &&
-                        condition.trim() !== ""
-                );
-
-
-            if (conditions.length > 0) {
-
-                return conditions;
-
-            }
-
-        }
-
-
-        /*
-         * 想定外のデータだった場合は
-         * 初期条件に戻す
-         */
-
-        return DEFAULT_CONDITIONS.slice();
-
-    } catch (error) {
-
-        console.error(
-            "条件データの読み込みに失敗しました:",
-            error
+      const saved = localStorage.getItem("KARAOKE_BOWLING_CONDITIONS_V1");
+      if (!saved) return DEFAULT_CONDITIONS.slice();
+      const parsed = JSON.parse(saved);
+      if (parsed && Array.isArray(parsed.categories)) {
+        const conditions = parsed.categories.flatMap(
+          category => Array.isArray(category.conditions) ? category.conditions : []
+        ).filter(
+          condition => typeof condition === "string" && condition.trim() !== ""
         );
-
-        return DEFAULT_CONDITIONS.slice();
-
+        if (conditions.length > 0) return conditions;
+      }
+      return DEFAULT_CONDITIONS.slice();
+    } catch (error) {
+      console.error("条件データの読み込みに失敗しました:", error);
+      return DEFAULT_CONDITIONS.slice();
     }
-}
+  }
 
-function loadUsedConditions() {
-  const saved = localStorage.getItem(USED_CONDITIONS_KEY);
-
-  if (!saved) {
+  function loadUsedConditions() {
+    const saved = localStorage.getItem(USED_CONDITIONS_KEY);
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) return parsed;
+    } catch (e) {
+      console.error("使用済み条件の読み込みエラー", e);
+    }
     return [];
   }
 
-  try {
-    const parsed = JSON.parse(saved);
+  function saveUsedConditions(usedConditions) {
+    localStorage.setItem(USED_CONDITIONS_KEY, JSON.stringify(usedConditions));
+  }
 
-    if (Array.isArray(parsed)) {
-      return parsed;
+  function markConditionAsUsed(condition) {
+    const usedConditions = loadUsedConditions();
+    if (!usedConditions.includes(condition)) {
+      usedConditions.push(condition);
+      saveUsedConditions(usedConditions);
     }
-  } catch (e) {
-    console.error("使用済み条件の読み込みエラー", e);
   }
-
-  return [];
-}
-
-function saveUsedConditions(usedConditions) {
-  localStorage.setItem(
-    USED_CONDITIONS_KEY,
-    JSON.stringify(usedConditions)
-  );
-}
-
-function markConditionAsUsed(condition) {
-  const usedConditions = loadUsedConditions();
-
-  if (!usedConditions.includes(condition)) {
-    usedConditions.push(condition);
-    saveUsedConditions(usedConditions);
-  }
-}
 
   function loadState() {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -1868,12 +1772,10 @@ function markConditionAsUsed(condition) {
     const penaltyVal = gameState.settings.rerollPenalty !== undefined ? gameState.settings.rerollPenalty : -5;
 
     if (!baseCond) {
-      /* 基本条件未選択時 */
       elem.textContent = `【第${songIdx + 1}曲目】基本条件は未抽選です（「回す」を押してください）`;
       if (btnSpin) { btnSpin.style.display = "flex"; btnSpin.style.flex = "3"; btnSpin.style.width = "30%"; }
       if (btnReroll) { btnReroll.style.display = "none"; }
     } else {
-      /* 基本条件選択済み */
       if (teamCond) {
         elem.textContent = `【第${songIdx + 1}曲目 / ${teamName}専用】${teamCond}`;
       } else {
@@ -1941,16 +1843,13 @@ function markConditionAsUsed(condition) {
     }
 
     const { teamIdx, songIdx } = gameState.activeCell;
-    const existing = gameState.scores[teamIdx][songIdx];
-
     const effCond = getEffectiveCondition(teamIdx, songIdx) || "（条件未指定）";
-    const conditionToSave = effCond;
 
     gameState.scores[teamIdx][songIdx] = {
       rawScore: Math.round(rawVal),
       avgScore: Math.round(avgVal),
       title: titleVal,
-      condition: conditionToSave
+      condition: effCond
     };
 
     const res = calculateFrameResult(teamIdx, songIdx);
@@ -1960,9 +1859,8 @@ function markConditionAsUsed(condition) {
     renderApp();
     syncInputFormWithActiveCell();
 
-        if (res) {
+    if (res) {
       if (res.isStrike) {
-        // 前の曲（songIdx - 1）が存在し、かつストライクだったか判定
         let isConsecutive = false;
         if (songIdx > 0) {
           const prevRes = calculateFrameResult(teamIdx, songIdx - 1);
@@ -1970,33 +1868,28 @@ function markConditionAsUsed(condition) {
             isConsecutive = true;
           }
         }
-        
-        // 判定結果を第2引数に渡して呼び出す
         triggerEffect("strike", isConsecutive);
       } else if (res.isSpare) {
         triggerEffect("spare");
       }
     }
-
   }
 
   let effectTimer = null;
   let strikeInterval = null;
 
-  // 第2引数 isConsecutive (true: 連続ストライク / false: 単発ストライク) を追加
   function triggerEffect(type, isConsecutive = false) {
     const overlay = document.getElementById("effect-overlay");
     const textElem = document.getElementById("effect-text");
     const strikeImg = document.getElementById("strike-img");
     if (!overlay || !textElem) return;
 
-    // 前回のタイマーと振動クラスをリセット
     clearTimeout(effectTimer);
     if (strikeInterval) clearInterval(strikeInterval);
     if (strikeImg) strikeImg.classList.remove("shake");
 
     overlay.className = "effect-overlay";
-    void overlay.offsetWidth; // リフロー発生
+    void overlay.offsetWidth;
 
     if (type === "strike") {
       if (strikeImg) {
@@ -2004,45 +1897,38 @@ function markConditionAsUsed(condition) {
         strikeImg.src = "1.jpg";
         overlay.classList.add("strike-anim", "active");
 
-        // ① 1.jpg と 2.jpg を交互に表示（2秒間）
         strikeInterval = setInterval(() => {
           isImage1 = !isImage1;
           strikeImg.src = isImage1 ? "1.jpg" : "2.jpg";
         }, 100);
 
-        // ② 2秒経過：3.jpgに切り替え
         setTimeout(() => {
           if (strikeInterval) clearInterval(strikeInterval);
           strikeImg.src = "3.jpg";
 
-          // 連続ストライク（isConsecutive が true）の時だけ振動クラスを追加
           if (isConsecutive) {
             strikeImg.classList.add("shake");
           }
         }, 2000);
 
-        // ③ 3秒経過：演出終了（画面を戻す & 振動を解除）
         effectTimer = setTimeout(() => {
           overlay.className = "effect-overlay";
           strikeImg.classList.remove("shake");
         }, 3000);
       }
-     } else if (type === "spare") {
+    } else if (type === "spare") {
       if (strikeImg) {
-        // 4 -> 5 -> 6 -> 5 の順番でループさせると 4 -> 5 -> 6 -> 5 -> 4 ... と交互になる
         const spareFrames = ["4.jpg", "5.jpg", "6.jpg", "5.jpg"];
         let frameIndex = 0;
 
         strikeImg.src = spareFrames[0];
         overlay.classList.add("spare-anim", "active");
 
-        // ① 0.1秒(100ms)ごとに 4 -> 5 -> 6 -> 5 ... を順番に表示（3秒間）
         animInterval = setInterval(() => {
           frameIndex = (frameIndex + 1) % spareFrames.length;
           strikeImg.src = spareFrames[frameIndex];
         }, 100);
 
-        // ② 3秒（3000ms）経過したら演出終了
         effectTimer = setTimeout(() => {
           if (animInterval) clearInterval(animInterval);
           overlay.className = "effect-overlay";
@@ -2050,9 +1936,6 @@ function markConditionAsUsed(condition) {
       }
     }
   }
-
-
-
 
   function advanceToNextUnfilledCell() {
     const { teamCount, songCount } = gameState.settings;
@@ -2093,103 +1976,70 @@ function markConditionAsUsed(condition) {
     runRouletteSpinInModal();
   }
 
-function runRouletteSpinInModal() {
-  if (isSpinning) return;
+  function runRouletteSpinInModal() {
+    if (isSpinning) return;
 
-  // conditions.html で管理されている最新の条件を取得
-  conditionsList = fetchConditions();
+    conditionsList = fetchConditions();
 
-  if (!Array.isArray(conditionsList) || conditionsList.length === 0) {
-    alert("選曲条件が登録されていません。");
-    return;
-  }
-
-  const usedConditions = loadUsedConditions();
-
-  // まだこのゲームで使っていない条件だけを抽選対象にする
-  const availableConditions = conditionsList.filter(
-    condition => !usedConditions.includes(condition)
-  );
-
-  if (availableConditions.length === 0) {
-    alert("このゲームで使用できる選曲条件がなくなりました。");
-    return;
-  }
-
-  isSpinning = true;
-
-  const reelWindow = document.getElementById("reel-window");
-  const reelText = document.getElementById("reel-text");
-  const closeBtn = document.getElementById("btn-modal-spin-close");
-
-  if (closeBtn) {
-    closeBtn.style.display = "none";
-  }
-
-  if (reelWindow) {
-    reelWindow.classList.add("spinning");
-  }
-
-  let counter = 0;
-
-  const interval = setInterval(() => {
-
-    // 回転中の表示だけ全条件からランダム表示
-    const randomItem =
-      conditionsList[
-        Math.floor(Math.random() * conditionsList.length)
-      ];
-
-    if (reelText) {
-      reelText.textContent = randomItem;
+    if (!Array.isArray(conditionsList) || conditionsList.length === 0) {
+      alert("選曲条件が登録されていません。");
+      return;
     }
 
-    counter++;
+    const usedConditions = loadUsedConditions();
+    const availableConditions = conditionsList.filter(
+      condition => !usedConditions.includes(condition)
+    );
 
-    if (counter > 20) {
-      clearInterval(interval);
-
-      if (reelWindow) {
-        reelWindow.classList.remove("spinning");
-      }
-
-      // 最終決定は「未使用条件」からのみ
-      const finalSelected =
-        availableConditions[
-          Math.floor(Math.random() * availableConditions.length)
-        ];
-
-      if (reelText) {
-        reelText.textContent = finalSelected;
-      }
-
-      ensureConditionsArrays();
-
-      if (currentSpinContext.mode === "base") {
-        gameState.frameConditions[currentSpinContext.songIdx] =
-          finalSelected;
-
-      } else if (currentSpinContext.mode === "reroll") {
-        gameState.teamConditions[currentSpinContext.teamIdx][currentSpinContext.songIdx] =
-          finalSelected;
-      }
-
-      gameState.currentCondition = finalSelected;
-
-      // このゲームでは使用済みにする
-      markConditionAsUsed(finalSelected);
-
-      isSpinning = false;
-
-      saveState();
-      renderApp();
-
-      if (closeBtn) {
-        closeBtn.style.display = "block";
-      }
+    if (availableConditions.length === 0) {
+      alert("このゲームで使用できる選曲条件がなくなりました。");
+      return;
     }
-  }, 80);
-}
+
+    isSpinning = true;
+
+    const reelWindow = document.getElementById("reel-window");
+    const reelText = document.getElementById("reel-text");
+    const closeBtn = document.getElementById("btn-modal-spin-close");
+
+    if (closeBtn) closeBtn.style.display = "none";
+    if (reelWindow) reelWindow.classList.add("spinning");
+
+    let counter = 0;
+
+    const interval = setInterval(() => {
+      const randomItem = conditionsList[Math.floor(Math.random() * conditionsList.length)];
+      if (reelText) reelText.textContent = randomItem;
+
+      counter++;
+
+      if (counter > 20) {
+        clearInterval(interval);
+
+        if (reelWindow) reelWindow.classList.remove("spinning");
+
+        const finalSelected = availableConditions[Math.floor(Math.random() * availableConditions.length)];
+        if (reelText) reelText.textContent = finalSelected;
+
+        ensureConditionsArrays();
+
+        if (currentSpinContext.mode === "base") {
+          gameState.frameConditions[currentSpinContext.songIdx] = finalSelected;
+        } else if (currentSpinContext.mode === "reroll") {
+          gameState.teamConditions[currentSpinContext.teamIdx][currentSpinContext.songIdx] = finalSelected;
+        }
+
+        gameState.currentCondition = finalSelected;
+        markConditionAsUsed(finalSelected);
+
+        isSpinning = false;
+        saveState();
+        renderApp();
+
+        if (closeBtn) closeBtn.style.display = "block";
+      }
+    }, 80);
+  }
 
   function openRerollModal() {
     if (isSpinning) return;
@@ -2218,9 +2068,7 @@ function runRouletteSpinInModal() {
       const opt = document.createElement("option");
       opt.value = t;
       opt.textContent = teamNames[t] || `チーム${t + 1}`;
-      if (t === teamIdx) {
-        opt.selected = true;
-      }
+      if (t === teamIdx) opt.selected = true;
       selectElem.appendChild(opt);
     }
 
@@ -2317,9 +2165,7 @@ function runRouletteSpinInModal() {
       newFinalSpare !== gameState.settings.finalSpareBonus;
 
     if (hasScores && isRuleChanged) {
-      if (!confirm("入力されたスコアは消去されますがよろしいですか？")) {
-        return;
-      }
+      if (!confirm("入力されたスコアは消去されますがよろしいですか？")) return;
       gameState.settings = {
         teamCount: newTeamCount,
         songCount: newSongCount,
@@ -2357,17 +2203,14 @@ function runRouletteSpinInModal() {
   }
 
   function confirmClearScores() {
-  if (confirm("現在の全チーム・全曲の入力スコアを削除してリセットしますか？（設定は保持されます）")) {
-    initEmptyScores();
-
-    // 新しいゲームなので、使用済み条件もリセット
-    localStorage.removeItem(USED_CONDITIONS_KEY);
-
-    saveState();
-    renderApp();
-    syncInputFormWithActiveCell();
+    if (confirm("現在の全チーム・全曲の入力スコアを削除してリセットしますか？（設定は保持されます）")) {
+      initEmptyScores();
+      localStorage.removeItem(USED_CONDITIONS_KEY);
+      saveState();
+      renderApp();
+      syncInputFormWithActiveCell();
+    }
   }
-}
 
   function openBreakdownModal() {
     ensureRerollPenalties();
@@ -2449,16 +2292,10 @@ function runRouletteSpinInModal() {
       html += `
           </tbody>
         </table>
-        <div style="display:flex; flex-direction:column; gap:4px; font-size:0.75rem; background:var(--summary-bg); padding:6px 8px; border-radius:4px; margin-top:4px;">
-          <div style="display:flex; justify-content:space-between;">
-            <span>素点合計: <b>${Math.round(totalRaw)}点</b></span>
-            <span>素点平均: <b>${avgRaw}点</b></span>
-            <span>曲計算点合計: <b>${Math.round(teamFinalTotal)}点</b></span>
-          </div>
-          <div style="display:flex; justify-content:space-between; border-top:1px dashed var(--border-color); padding-top:4px; margin-top:2px;">
-            <span>引き直しペナルティ: <b style="color:var(--accent-orange);">${penalty}点</b></span>
-            <span>最終計算点: <b style="color:var(--accent-cyan); font-size:0.85rem;">${Math.round(teamFinalTotalWithPenalty)}点</b></span>
-          </div>
+        <div style="display:flex; flex-direction:column; gap:4px; font-size:0.75rem; margin-top:4px;">
+          <div>平均素点: <b>${avgRaw}</b> 点</div>
+          <div>引き直しペナルティ: <b>${penalty}</b> 点</div>
+          <div>チーム合計: <b>${Math.round(teamFinalTotalWithPenalty)}</b> 点</div>
         </div>
       `;
     }
@@ -2467,346 +2304,159 @@ function runRouletteSpinInModal() {
     openModal("breakdown-modal");
   }
 
-  function checkAutoFinished() {
-    const { teamCount, songCount } = gameState.settings;
-    for (let t = 0; t < teamCount; t++) {
-      for (let s = 0; s < songCount; s++) {
-        if (!gameState.scores[t][s]) return;
-      }
-    }
-
-    if (!gameState.isFinished) {
-      gameState.isFinished = true;
-      saveState();
-      openResultModal();
-    }
-  }
-
   function openResultModal() {
     ensureRerollPenalties();
-    const { teamCount, songCount, teamNames } = gameState.settings;
     const container = document.getElementById("result-body");
+    const { teamCount, teamNames } = gameState.settings;
+    let html = "<div style='display:flex; flex-direction:column; gap:8px;'>";
 
-    const teamResults = [];
-    let sumAllTotal = 0;
-
+    let rankings = [];
     for (let t = 0; t < teamCount; t++) {
-      let finalScore = 0;
-      for (let s = 0; s < songCount; s++) {
+      let teamTotalScore = 0;
+      for (let s = 0; s < gameState.settings.songCount; s++) {
         const res = calculateFrameResult(t, s);
-        if (res) finalScore += res.subtotal;
+        if (res) teamTotalScore += res.subtotal;
       }
       const penalty = gameState.rerollPenalties[t] || 0;
-      finalScore += penalty;
-
-      teamResults.push({
+      rankings.push({
         teamIdx: t,
         name: teamNames[t] || `チーム${t + 1}`,
-        score: finalScore
+        total: teamTotalScore + penalty
       });
-      sumAllTotal += finalScore;
     }
 
-    teamResults.sort((a, b) => b.score - a.score);
-    let rank = 1;
-    for (let i = 0; i < teamResults.length; i++) {
-      if (i > 0 && teamResults[i].score < teamResults[i - 1].score) {
-        rank = i + 1;
-      }
-      teamResults[i].rank = rank;
-    }
+    rankings.sort((a, b) => b.total - a.total);
 
-    const topScore = teamResults[0].score;
-    const avgAllTeams = sumAllTotal / teamCount;
+    rankings.forEach((item, index) => {
+      const crown = index === 0 ? "🥇 " : index === 1 ? "🥈 " : index === 2 ? "🥉 " : "";
+      html += `
+        <div style="background:var(--card-bg); border:1px solid var(--border-color); padding:10px; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:bold; font-size:1.1rem; color:var(--text-main);">${crown}${index + 1}位: ${item.name}</span>
+          <span style="font-weight:900; font-size:1.3rem; color:var(--accent-cyan);">${Math.round(item.total)} 点</span>
+        </div>
+      `;
+    });
 
-    let html = "";
-
-    if (teamCount === 2) {
-      const isDraw = teamResults[0].score === teamResults[1].score;
-      const diff = Math.abs(teamResults[0].score - teamResults[1].score);
-
-      html += `<div style="text-align:center; font-size:1.2rem; margin-bottom:12px; font-weight:bold; color:var(--accent-yellow);">`;
-      if (isDraw) {
-        html += `🤝 引き分け！ (${Math.round(teamResults[0].score)}点)`;
-      } else {
-        html += `👑 1位: ${teamResults[0].name} (${Math.round(teamResults[0].score)}点)<br>`;
-        html += `<span style="font-size:0.9rem; color:var(--text-sub);">2位: ${teamResults[1].name} (${Math.round(teamResults[1].score)}点) / 点差: ${Math.round(diff)}点</span>`;
-      }
-      html += `</div>`;
-    } else {
-      html += `<div style="font-size:0.85rem; margin-bottom:8px;">全チーム平均点: <b>${avgAllTeams.toFixed(1)}点</b></div>`;
-      html += `<table class="breakdown-table"><thead><tr><th>順位</th><th>チーム名</th><th>最終点</th><th>1位差</th><th>平均差</th></tr></thead><tbody>`;
-
-      teamResults.forEach(item => {
-        const diffTop = Math.round(topScore - item.score);
-        const diffAvg = Math.round(item.score - avgAllTeams);
-        html += `
-          <tr>
-            <td><b>${item.rank}位</b></td>
-            <td>${item.name}</td>
-            <td style="color:var(--accent-cyan); font-weight:bold;">${Math.round(item.score)}</td>
-            <td>-${diffTop}</td>
-            <td>${diffAvg >= 0 ? "+" + diffAvg : diffAvg}</td>
-          </tr>
-        `;
-      });
-      html += `</tbody></table>`;
-    }
-
+    html += "</div>";
     container.innerHTML = html;
     openModal("result-modal");
   }
 
+  function openModal(id) {
+    const elem = document.getElementById(id);
+    if (elem) elem.classList.add("active");
+  }
+
+  function closeModal(id) {
+    const elem = document.getElementById(id);
+    if (elem) elem.classList.remove("active");
+  }
+
+  function checkAutoFinished() {
+    const { teamCount, songCount } = gameState.settings;
+    let filledCount = 0;
+    const totalFrames = teamCount * songCount;
+
+    for (let t = 0; t < teamCount; t++) {
+      for (let s = 0; s < songCount; s++) {
+        if (gameState.scores[t][s]) filledCount++;
+      }
+    }
+
+    if (filledCount === totalFrames && totalFrames > 0 && !gameState.isFinished) {
+      gameState.isFinished = true;
+      saveState();
+      setTimeout(() => { openResultModal(); }, 400);
+    }
+  }
+
+  function openConditionsEditor() {
+    window.location.href = "conditions.html";
+  }
+
   function exportPDF() {
-    ensureRerollPenalties();
-    ensureConditionsArrays();
+    const element = document.getElementById("breakdown-body");
+    if (!element) return;
+    const opt = {
+      margin:       0.5,
+      filename:     'karaoke_bowling_result.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  }
 
+  /* ------------------------------------------
+     バトルステージ連携処理
+     ------------------------------------------ */
+  function startBattle() {
     const { teamCount, songCount, teamNames } = gameState.settings;
-
-    const teamResults = [];
-    let sumAllTotal = 0;
+    const playersData = [];
 
     for (let t = 0; t < teamCount; t++) {
-      let finalScore = 0;
+      const history = [];
       for (let s = 0; s < songCount; s++) {
+        const scoreData = gameState.scores[t][s];
         const res = calculateFrameResult(t, s);
-        if (res) finalScore += res.subtotal;
-      }
-      const penalty = gameState.rerollPenalties[t] || 0;
-      finalScore += penalty;
-
-      teamResults.push({
-        teamIdx: t,
-        name: teamNames[t] || `チーム${t + 1}`,
-        score: finalScore
-      });
-      sumAllTotal += finalScore;
-    }
-
-    teamResults.sort((a, b) => b.score - a.score);
-    let rank = 1;
-    for (let i = 0; i < teamResults.length; i++) {
-      if (i > 0 && teamResults[i].score < teamResults[i - 1].score) {
-        rank = i + 1;
-      }
-      teamResults[i].rank = rank;
-    }
-
-    const topScore = teamResults.length > 0 ? teamResults[0].score : 0;
-    const avgAllTeams = teamCount > 0 ? sumAllTotal / teamCount : 0;
-
-    const printArea = document.createElement("div");
-    printArea.style.padding = "15px";
-    printArea.style.fontFamily = "'Yu Mincho', 'Hiragino Mincho ProN', 'MS PMincho', serif";
-    printArea.style.color = "#111";
-    printArea.style.background = "#fff";
-    printArea.style.width = "100%";
-    printArea.style.boxSizing = "border-box";
-
-    const dateStr = new Date().toLocaleDateString("ja-JP", {
-      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
-    });
-
-    let pdfHTML = `
-      <div style="border: 3px double #000; padding: 10px; margin-bottom: 12px; position: relative;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 8px;">
-          <div style="font-size: 10px; letter-spacing: 1px;">OFFICIAL SCORE SHEET</div>
-          <div style="font-size: 22px; font-weight: bold; letter-spacing: 4px; text-align: center;">カラオケボウリング 成績表</div>
-          <div style="font-size: 10px;">発行日時: ${dateStr}</div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 10px;">
-          <span>会場: カラオケルーム</span>
-          <span>参加チーム数: ${teamCount} チーム</span>
-          <span>総フレーム数: ${songCount} 曲</span>
-        </div>
-      </div>
-    `;
-
-    pdfHTML += `
-      <div style="border: 2px solid #000; margin-bottom: 16px; padding: 8px; background-color: #fafafa;">
-        <div style="text-align: center; font-size: 14px; font-weight: bold; letter-spacing: 2px; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 8px;">【 終 了 成 績 】</div>
-        <div style="text-align: right; font-size: 10px; margin-bottom: 6px;">全チーム平均点：<b>${avgAllTeams.toFixed(1)} 点</b></div>
-    `;
-
-    if (teamCount === 2) {
-      const first = teamResults[0];
-      const second = teamResults[1];
-      const isDraw = first.score === second.score;
-      const diff = Math.abs(first.score - second.score);
-
-      if (isDraw) {
-        pdfHTML += `<div style="text-align: center; font-size: 14px; font-weight: bold; margin: 6px 0; color: #a61c1c;">《 引き分け (同点) 》</div>`;
-      } else {
-        pdfHTML += `<div style="text-align: center; font-size: 14px; font-weight: bold; margin: 6px 0;">優勝：${first.name} （${Math.round(first.score)} 点）</div>`;
-      }
-
-      pdfHTML += `
-        <table style="width: 100%; border-collapse: collapse; font-size: 10px; border: 1px solid #000; text-align: center;">
-          <thead>
-            <tr style="background: #e0e0e0; border-bottom: 1px solid #000;">
-              <th style="padding: 4px; border-right: 1px solid #000; width: 15%;">順位</th>
-              <th style="padding: 4px; border-right: 1px solid #000; text-align: left;">チーム名</th>
-              <th style="padding: 4px; border-right: 1px solid #000; width: 20%;">最終点</th>
-              <th style="padding: 4px; width: 20%;">トップ差</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style="border-bottom: 1px dashed #666;">
-              <td style="padding: 4px; border-right: 1px solid #000; font-weight: bold;">第1位</td>
-              <td style="padding: 4px; border-right: 1px solid #000; text-align: left;">${first.name}</td>
-              <td style="padding: 4px; border-right: 1px solid #000; font-weight: bold; text-align: right;">${Math.round(first.score)}</td>
-              <td style="padding: 4px; text-align: right;">-</td>
-            </tr>
-            <tr>
-              <td style="padding: 4px; border-right: 1px solid #000; font-weight: bold;">第2位</td>
-              <td style="padding: 4px; border-right: 1px solid #000; text-align: left;">${second.name}</td>
-              <td style="padding: 4px; border-right: 1px solid #000; font-weight: bold; text-align: right;">${Math.round(second.score)}</td>
-              <td style="padding: 4px; text-align: right;">-${Math.round(diff)}</td>
-            </tr>
-          </tbody>
-        </table>
-      `;
-    } else {
-      pdfHTML += `
-        <table style="width: 100%; border-collapse: collapse; font-size: 10px; border: 1px solid #000;">
-          <thead>
-            <tr style="background: #e0e0e0; border-bottom: 1px solid #000;">
-              <th style="padding: 4px; border-right: 1px solid #000; width: 10%; text-align: center;">順位</th>
-              <th style="padding: 4px; border-right: 1px solid #000; text-align: left;">チーム名</th>
-              <th style="padding: 4px; border-right: 1px solid #000; width: 18%; text-align: right;">最終点</th>
-              <th style="padding: 4px; border-right: 1px solid #000; width: 18%; text-align: right;">トップ差</th>
-              <th style="padding: 4px; width: 18%; text-align: right;">平均差</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      teamResults.forEach((item, index) => {
-        const diffTop = Math.round(topScore - item.score);
-        const diffAvg = Math.round(item.score - avgAllTeams);
-        const avgDiffText = diffAvg >= 0 ? `+${diffAvg}` : `${diffAvg}`;
-        const borderStyle = index === teamResults.length - 1 ? "" : "border-bottom: 1px dashed #666;";
-
-        pdfHTML += `
-          <tr style="${borderStyle}">
-            <td style="padding: 4px; border-right: 1px solid #000; text-align: center; font-weight: bold;">第${item.rank}位</td>
-            <td style="padding: 4px; border-right: 1px solid #000;">${item.name}</td>
-            <td style="padding: 4px; border-right: 1px solid #000; text-align: right; font-weight: bold;">${Math.round(item.score)}</td>
-            <td style="padding: 4px; border-right: 1px solid #000; text-align: right;">${diffTop === 0 ? "-" : `-${diffTop}`}</td>
-            <td style="padding: 4px; text-align: right;">${avgDiffText}</td>
-          </tr>
-        `;
-      });
-
-      pdfHTML += `</tbody></table>`;
-    }
-
-    pdfHTML += `</div>`;
-
-    for (let t = 0; t < teamCount; t++) {
-      const tName = teamNames[t] || `チーム${t + 1}`;
-      let totalScore = 0;
-
-      pdfHTML += `
-        <div style="margin-bottom: 16px; page-break-inside: avoid; border: 1px solid #000; padding: 6px;">
-          <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 3px; margin-bottom: 6px; font-weight: bold; font-size: 11px;">
-            <span>チーム名: 【 ${tName} 】</span>
-            <span>スコア明細</span>
-          </div>
-
-          <table style="width: 100%; border-collapse: collapse; font-size: 9.5px; border: 1px solid #000;">
-            <thead>
-              <tr style="background: #eee; border-bottom: 1px solid #000;">
-                <th style="padding: 3px; border-right: 1px solid #000; width: 6%; text-align: center;">曲</th>
-                <th style="padding: 3px; border-right: 1px solid #000; text-align: left;">楽曲タイトル / 選曲条件</th>
-                <th style="padding: 3px; border-right: 1px solid #000; width: 11%; text-align: right;">素点</th>
-                <th style="padding: 3px; border-right: 1px solid #000; width: 11%; text-align: right;">平均</th>
-                <th style="padding: 3px; border-right: 1px solid #000; width: 9%; text-align: center;">判定</th>
-                <th style="padding: 3px; border-right: 1px solid #000; width: 11%; text-align: right;">基本点</th>
-                <th style="padding: 3px; border-right: 1px solid #000; width: 11%; text-align: right;">加算点</th>
-                <th style="padding: 3px; width: 13%; text-align: right;">計</th>
-              </tr>
-            </thead>
-            <tbody>
-      `;
-
-      for (let s = 0; s < songCount; s++) {
-        const res = calculateFrameResult(t, s);
-        const data = gameState.scores[t][s];
-        const condText = (data && data.condition) ? data.condition : (getEffectiveCondition(t, s) || "-");
-        const isLast = s === songCount - 1;
-        const borderBottom = isLast ? "" : "border-bottom: 1px solid #ccc;";
-
-        if (res && data) {
-          totalScore += res.subtotal;
-          pdfHTML += `
-            <tr style="${borderBottom}">
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: center;">${s + 1}</td>
-              <td style="padding: 3px; border-right: 1px solid #000;">
-                <div><b>${data.title || "-"}</b></div>
-                <div style="font-size:8px; color:#555;">${condText}</div>
-              </td>
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">${Math.round(res.rawScore)}</td>
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">${Math.round(res.avgScore)}</td>
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: center; font-weight: bold;">[ ${res.mark} ]</td>
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">${Math.round(res.baseScore)}</td>
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">${Math.round(res.bonus)}</td>
-              <td style="padding: 3px; text-align: right; font-weight: bold;">${Math.round(res.subtotal)}</td>
-            </tr>
-          `;
+        if (scoreData && res) {
+          history.push({
+            songIndex: s,
+            title: scoreData.title || "",
+            condition: scoreData.condition || "",
+            rawScore: res.rawScore,
+            averageScore: res.avgScore,
+            diff: res.diff,
+            strike: res.isStrike,
+            spare: res.isSpare,
+            subtotal: res.subtotal
+          });
         } else {
-          pdfHTML += `
-            <tr style="${borderBottom}">
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: center;">${s + 1}</td>
-              <td style="padding: 3px; border-right: 1px solid #000;">
-                <div>-</div>
-                <div style="font-size:8px; color:#555;">${condText}</div>
-              </td>
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">-</td>
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">-</td>
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: center;">-</td>
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">-</td>
-              <td style="padding: 3px; border-right: 1px solid #000; text-align: right;">-</td>
-              <td style="padding: 3px; text-align: right;">-</td>
-            </tr>
-          `;
+          history.push({
+            songIndex: s,
+            title: "",
+            condition: getEffectiveCondition(t, s) || "",
+            rawScore: null,
+            averageScore: null,
+            diff: null,
+            strike: false,
+            spare: false,
+            subtotal: 0
+          });
         }
       }
 
-      const penalty = gameState.rerollPenalties[t] || 0;
-      const finalScoreWithPenalty = totalScore + penalty;
-
-      pdfHTML += `
-            </tbody>
-          </table>
-
-          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 10.5px; margin-top: 6px; padding: 2px 4px; background-color: #f5f5f5; border: 1px solid #000;">
-            <span>減点（引き直しペナルティ）: ${penalty} 点</span>
-            <span>合計獲得得点: ${Math.round(finalScoreWithPenalty)} 点</span>
-          </div>
-        </div>
-      `;
+      playersData.push({
+        teamIndex: t,
+        name: teamNames[t] || `チーム${t + 1}`,
+        penalty: gameState.rerollPenalties[t] || 0,
+        history: history
+      });
     }
 
-    printArea.innerHTML = pdfHTML;
-
-    const opt = {
-      margin: [8, 8, 8, 8],
-      filename: `karaoke_bowling_score_${Date.now()}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+    const battlePayload = {
+      settings: gameState.settings,
+      players: playersData,
+      rawGameState: gameState,
+      timestamp: Date.now()
     };
 
-    html2pdf().set(opt).from(printArea).save();
+    localStorage.setItem(BATTLE_DATA_KEY, JSON.stringify(battlePayload));
+    window.location.href = "battle-roulette.html";
   }
 
-  function openModal(id) { document.getElementById(id).classList.add("active"); }
-  function closeModal(id) { document.getElementById(id).classList.remove("active"); }
-
-function openConditionsEditor() {
-  window.location.href = "conditions.html";
-}
+  function checkBattleResult() {
+    const resultSaved = localStorage.getItem(BATTLE_RESULT_KEY);
+    if (resultSaved) {
+      try {
+        const resultData = JSON.parse(resultSaved);
+        console.log("バトル結果を受信しました:", resultData);
+        localStorage.removeItem(BATTLE_RESULT_KEY);
+      } catch (e) {
+        console.error("バトル結果データの解析エラー", e);
+      }
+    }
+  }
 </script>
 </body>
 </html>
