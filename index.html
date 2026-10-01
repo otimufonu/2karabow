@@ -1093,12 +1093,21 @@
           <input type="number" id="setting-song-count" class="form-control" min="1" max="10">
         </div>
       </div>
-      <div class="form-group" style="margin-top: 4px;">
-        <label>画面テーマ (配色):</label>
-        <select id="setting-theme" class="form-control">
-          <option value="dark">ダークモード</option>
-          <option value="light">ライトモード</option>
-        </select>
+      <div class="num-input-grid" style="margin-top: 4px;">
+        <div class="form-group">
+          <label>画面テーマ (配色):</label>
+          <select id="setting-theme" class="form-control">
+            <option value="dark">ダークモード</option>
+            <option value="light">ライトモード</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>最終フレームバトル発動:</label>
+          <select id="setting-final-battle" class="form-control">
+            <option value="true">オン (強制発動)</option>
+            <option value="false">オフ</option>
+          </select>
+        </div>
       </div>
       <div id="team-names-container" class="form-group" style="margin-top: 4px;"></div>
       <hr style="border-color: var(--border-color);">
@@ -1286,7 +1295,8 @@
       rerollPenalty: -5,
       finalStrikeBonus: 2,
       finalSpareBonus: 2,
-      theme: "dark"
+      theme: "dark",
+      enableFinalBattle: true
     },
     scores: [],
     rerollPenalties: [0, 0],
@@ -1445,6 +1455,7 @@
     checkBattleResult();
     renderApp();
     syncInputFormWithActiveCell();
+    checkFinalBattleTrigger();
   });
 
   function fetchConditions() {
@@ -1502,6 +1513,9 @@
         }
         if (gameState.settings && !gameState.settings.theme) {
           gameState.settings.theme = "dark";
+        }
+        if (gameState.settings && gameState.settings.enableFinalBattle === undefined) {
+          gameState.settings.enableFinalBattle = true;
         }
       } catch (e) {
         console.error("データ復元エラー", e);
@@ -1772,7 +1786,12 @@
     const penaltyVal = gameState.settings.rerollPenalty !== undefined ? gameState.settings.rerollPenalty : -5;
 
     if (!baseCond) {
-      elem.textContent = `【第${songIdx + 1}曲目】基本条件は未抽選です（「回す」を押してください）`;
+      const isLastSong = (songIdx === gameState.settings.songCount - 1);
+      if (isLastSong && gameState.settings.enableFinalBattle) {
+        elem.textContent = `【最終フレーム】バトルステージ未発動（「回す」を押してバトル開始）`;
+      } else {
+        elem.textContent = `【第${songIdx + 1}曲目】基本条件は未抽選です（「回す」を押してください）`;
+      }
       if (btnSpin) { btnSpin.style.display = "flex"; btnSpin.style.flex = "3"; btnSpin.style.width = "30%"; }
       if (btnReroll) { btnReroll.style.display = "none"; }
     } else {
@@ -1804,6 +1823,7 @@
     renderRouletteTarget();
     updateFooterConditionDisplay();
     syncInputFormWithActiveCell();
+    checkFinalBattleTrigger();
   }
 
   function syncInputFormWithActiveCell() {
@@ -1858,6 +1878,7 @@
     advanceToNextUnfilledCell();
     renderApp();
     syncInputFormWithActiveCell();
+    checkFinalBattleTrigger();
 
     if (res) {
       if (res.isStrike) {
@@ -1956,7 +1977,14 @@
 
   function openAndSpinRoulette() {
     const { songIdx } = gameState.activeCell;
+    const lastSongIdx = gameState.settings.songCount - 1;
     ensureConditionsArrays();
+
+    // 最終フレームでバトル設定がON、かつ未発動の場合は自動的にバトル画面へ遷移
+    if (songIdx === lastSongIdx && gameState.settings.enableFinalBattle && !gameState.frameConditions[lastSongIdx]) {
+      startBattle();
+      return;
+    }
 
     if (gameState.frameConditions[songIdx]) {
       alert("この曲の基本条件は既に決定されています。変更したい場合は「引き直し」をご利用ください。");
@@ -2102,7 +2130,7 @@
   }
 
   function openSettingsModal() {
-    const { teamCount, songCount, teamNames, spareDiff, rerollPenalty, finalStrikeBonus, finalSpareBonus, theme } = gameState.settings;
+    const { teamCount, songCount, teamNames, spareDiff, rerollPenalty, finalStrikeBonus, finalSpareBonus, theme, enableFinalBattle } = gameState.settings;
 
     document.getElementById("setting-team-count").value = teamCount;
     document.getElementById("setting-song-count").value = songCount;
@@ -2111,6 +2139,7 @@
     document.getElementById("setting-final-strike").value = finalStrikeBonus;
     document.getElementById("setting-final-spare").value = finalSpareBonus;
     document.getElementById("setting-theme").value = theme || "dark";
+    document.getElementById("setting-final-battle").value = enableFinalBattle !== false ? "true" : "false";
 
     renderTeamNameInputs(teamCount, teamNames);
 
@@ -2143,6 +2172,7 @@
     const newFinalStrike = parseFloat(document.getElementById("setting-final-strike").value);
     const newFinalSpare = parseFloat(document.getElementById("setting-final-spare").value);
     const newTheme = document.getElementById("setting-theme").value || "dark";
+    const newEnableFinalBattle = document.getElementById("setting-final-battle").value === "true";
 
     const nameInputs = document.querySelectorAll(".team-name-input");
     const newTeamNames = Array.from(nameInputs).map((inp, idx) => inp.value.trim() || `チーム${idx + 1}`);
@@ -2174,7 +2204,8 @@
         rerollPenalty: penaltyVal,
         finalStrikeBonus: newFinalStrike,
         finalSpareBonus: newFinalSpare,
-        theme: newTheme
+        theme: newTheme,
+        enableFinalBattle: newEnableFinalBattle
       };
       initEmptyScores();
     } else {
@@ -2186,7 +2217,8 @@
         rerollPenalty: penaltyVal,
         finalStrikeBonus: newFinalStrike,
         finalSpareBonus: newFinalSpare,
-        theme: newTheme
+        theme: newTheme,
+        enableFinalBattle: newEnableFinalBattle
       };
       if (gameState.scores.length !== newTeamCount || (gameState.scores[0] && gameState.scores[0].length !== newSongCount)) {
         initEmptyScores();
@@ -2390,6 +2422,38 @@
   /* ------------------------------------------
      バトルステージ連携処理
      ------------------------------------------ */
+  function checkFinalBattleTrigger() {
+    if (!gameState.settings.enableFinalBattle) return;
+
+    const { teamCount, songCount } = gameState.settings;
+    const lastSongIdx = songCount - 1;
+
+    ensureConditionsArrays();
+
+    // 最終フレームの全員共通条件が既にセットされている場合は発動しない
+    if (gameState.frameConditions[lastSongIdx]) return;
+
+    // 最終フレームの手前（1〜最終-1曲目）がすべて入力済みかチェック
+    let preFinalCompleted = true;
+    for (let t = 0; t < teamCount; t++) {
+      for (let s = 0; s < lastSongIdx; s++) {
+        if (!gameState.scores[t][s]) {
+          preFinalCompleted = false;
+          break;
+        }
+      }
+      if (!preFinalCompleted) break;
+    }
+
+    if (preFinalCompleted && gameState.activeCell.songIdx === lastSongIdx) {
+      setTimeout(() => {
+        if (confirm("最終フレームに入りました！バトルステージを開始しますか？")) {
+          startBattle();
+        }
+      }, 300);
+    }
+  }
+
   function startBattle() {
     const { teamCount, songCount, teamNames } = gameState.settings;
     const playersData = [];
@@ -2451,6 +2515,17 @@
       try {
         const resultData = JSON.parse(resultSaved);
         console.log("バトル結果を受信しました:", resultData);
+
+        // バトルで決定した特殊ゲーム内容（ルール）を最終フレーム全員共通条件としてセット
+        const battleCondition = resultData.condition || resultData.selectedGame || resultData.gameTitle || resultData.title;
+        if (battleCondition) {
+          const lastSongIdx = gameState.settings.songCount - 1;
+          ensureConditionsArrays();
+          gameState.frameConditions[lastSongIdx] = battleCondition;
+          gameState.currentCondition = battleCondition;
+          saveState();
+        }
+
         localStorage.removeItem(BATTLE_RESULT_KEY);
       } catch (e) {
         console.error("バトル結果データの解析エラー", e);
