@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>バトルステージ決定ルーレット</title>
+  <style>
+    :root {
+      --bg-color: #0b0d12;
+      --card-bg: #161a22;
+      --accent-red: #ff2a5f;
+      --accent-yellow: #ffc107;
+      --accent-cyan: #00e5ff;
+      --text-main: #ffffff;
+      --text-sub: #a0a8b8;
+      --border-color: #2a3142;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    h1 {
+      font-size: 1.4rem;
+      color: var(--accent-yellow);
+      margin-bottom: 12px;
+    }
+    .data-preview {
+      background: #0d1017;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 16px;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      text-align: left;
+    }
+    .reel-window {
+      background: #000;
+      border: 2px solid var(--accent-red);
+      border-radius: 8px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .reel-text {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: var(--accent-cyan);
+    }
+    .btn {
+      background: linear-gradient(135deg, #ff2a5f, #b3002d);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+    }
+    .btn:active { transform: scale(0.98); }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>🎰 バトルステージ決定</h1>
+
+  <div class="data-preview" id="data-preview">
+    データを読み込み中...
+  </div>
+
+  <div class="reel-window">
+    <div id="reel-text" class="reel-text">ルーレットを回してください</div>
+  </div>
+
+  <button id="btn-spin" class="btn" onclick="spinRoulette()">ルーレットを回す</button>
+</div>
+
+<script>
+  const BATTLE_DATA_KEY = "karaokeBowlingBattleData";
+
+  const STAGES = [
+    { id: "mekakushi", name: "目隠し", file: "battle-mekakushi.html" },
+    { id: "akashiro", name: "赤白ボーカル", file: "battle-akashiro.html" },
+    { id: "kako", name: "過去の自分を超えろ", file: "battle-kako.html" },
+    { id: "chousenjo", name: "挑戦状", file: "battle-chosenjo.html" }
+  ];
+
+  let battleData = null;
+
+  window.addEventListener("DOMContentLoaded", () => {
+    const saved = localStorage.getItem(BATTLE_DATA_KEY);
+    if (!saved) {
+      document.getElementById("data-preview").textContent = "※ バトルデータが見つかりません。通常のindex.htmlから遷移してください。";
+      return;
+    }
+
+    try {
+      battleData = JSON.parse(saved);
+      const playerNames = battleData.players ? battleData.players.map(p => p.name).join(", ") : "なし";
+      document.getElementById("data-preview").innerHTML = `
+        <div>■ 受信プレイヤー数: <b>${battleData.players ? battleData.players.length : 0}</b></div>
+        <div>■ プレイヤー一覧: <b>${playerNames}</b></div>
+      `;
+    } catch (e) {
+      document.getElementById("data-preview").textContent = "データの読み込みに失敗しました。";
+    }
+  });
+
+  function spinRoulette() {
+    if (!battleData) {
+      alert("バトルデータがありません。");
+      return;
+    }
+
+    const btn = document.getElementById("btn-spin");
+    btn.disabled = true;
+
+    const reelText = document.getElementById("reel-text");
+    let counter = 0;
+
+    const interval = setInterval(() => {
+      const rand = STAGES[Math.floor(Math.random() * STAGES.length)];
+      reelText.textContent = rand.name;
+      counter++;
+
+      if (counter > 15) {
+        clearInterval(interval);
+        const selectedStage = STAGES[Math.floor(Math.random() * STAGES.length)];
+        reelText.textContent = selectedStage.name;
+
+        setTimeout(() => {
+          window.location.href = selectedStage.file;
+        }, 800);
+      }
+    }, 100);
+  }
+</script>
+</body>
+</html>
