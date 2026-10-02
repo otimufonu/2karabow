@@ -1104,7 +1104,7 @@
         <div class="form-group">
           <label>最終フレームバトル発動:</label>
           <select id="setting-final-battle" class="form-control">
-            <option value="true">オン (強制発動)</option>
+            <option value="true">オン</option>
             <option value="false">オフ</option>
           </select>
         </div>
@@ -1590,8 +1590,10 @@
     const frameData = gameState.scores[teamIdx][songIdx];
     if (!frameData) return null;
 
-    const { rawScore, avgScore } = frameData;
-    const diff = rawScore - avgScore;
+    const rawScore = frameData.rawScore;
+    const avgScore = frameData.avgScore !== undefined ? frameData.avgScore : (frameData.averageScore || 0);
+    const diff = frameData.averageDifference !== undefined ? frameData.averageDifference : (rawScore - avgScore);
+
     const isStrike = rawScore >= 92;
     const isSpare = !isStrike && (diff >= gameState.settings.spareDiff);
 
@@ -1603,6 +1605,21 @@
     let isWaiting = false;
     let mark = "OPEN";
 
+    const isBattleFinal = isLastSong && gameState.settings.enableFinalBattle === true && typeof frameData.battleModifier === "number";
+
+    if (isBattleFinal) {
+      const battleModifier = frameData.battleModifier || 0;
+      const subtotal = frameData.battleScore !== undefined ? frameData.battleScore : (baseScore + battleModifier);
+      return {
+        rawScore, avgScore, diff,
+        displayDiff: diff <= 0 ? "G" : `+${Math.round(diff)}`,
+        isStrike, isSpare,
+        mark: isStrike ? "STRIKE" : isSpare ? "SPARE" : "OPEN",
+        baseScore, bonus: battleModifier, subtotal, isWaiting: false,
+        isBattleFinal: true, battleModifier
+      };
+    }
+
     if (isStrike) {
       mark = "STRIKE";
       if (isLastSong) {
@@ -1610,7 +1627,9 @@
         bonus = subtotal - baseScore;
       } else {
         if (nextFrame) {
-          const nextDiff = nextFrame.rawScore - nextFrame.avgScore;
+          const nextRaw = nextFrame.rawScore;
+          const nextAvg = nextFrame.avgScore !== undefined ? nextFrame.avgScore : (nextFrame.averageScore || 0);
+          const nextDiff = nextFrame.averageDifference !== undefined ? nextFrame.averageDifference : (nextRaw - nextAvg);
           bonus = nextDiff * 2;
         } else {
           isWaiting = true;
@@ -1623,7 +1642,9 @@
         bonus = subtotal - baseScore;
       } else {
         if (nextFrame) {
-          const nextDiff = nextFrame.rawScore - nextFrame.avgScore;
+          const nextRaw = nextFrame.rawScore;
+          const nextAvg = nextFrame.avgScore !== undefined ? nextFrame.avgScore : (nextFrame.averageScore || 0);
+          const nextDiff = nextFrame.averageDifference !== undefined ? nextFrame.averageDifference : (nextRaw - nextAvg);
           bonus = nextDiff * 1;
         } else {
           isWaiting = true;
@@ -1639,7 +1660,8 @@
 
     return {
       rawScore, avgScore, diff, displayDiff,
-      isStrike, isSpare, mark, baseScore, bonus, subtotal, isWaiting
+      isStrike, isSpare, mark, baseScore, bonus, subtotal, isWaiting,
+      isBattleFinal: false, battleModifier: 0
     };
   }
 
@@ -1718,25 +1740,50 @@
           td.classList.add("filled");
           teamTotalScore += res.subtotal;
 
-          let markClass = "";
-          let markText = "";
-          if (res.isStrike) { markClass = "mark-strike"; markText = "X"; }
-          else if (res.isSpare) { markClass = "mark-spare"; markText = "/"; }
-          else {
-            markClass = "mark-g";
-            markText = res.diff <= 0 ? "G" : `${Math.round(res.diff)}`;
+          const isBattleFinalFrame = (s === songCount - 1) &&
+            gameState.settings.enableFinalBattle === true &&
+            typeof scoreData.battleModifier === "number";
+
+          if (isBattleFinalFrame) {
+            const rawDisp = Math.round(scoreData.rawScore);
+            const diffVal = scoreData.averageDifference !== undefined ? scoreData.averageDifference : (scoreData.rawScore - (scoreData.avgScore || scoreData.averageScore || 0));
+            const diffDisp = diffVal >= 0 ? `+${Math.round(diffVal)}` : `${Math.round(diffVal)}`;
+            const modVal = scoreData.battleModifier;
+            const modDisp = modVal >= 0 ? `+${Math.round(modVal)}` : `${Math.round(modVal)}`;
+
+            td.innerHTML = `
+              <div class="frame-box" onclick="selectCell(${t}, ${s})">
+                <div class="frame-top" style="display:flex; width:100%;">
+                  <span style="width:33.33%; display:flex; align-items:center; justify-content:center; font-size:clamp(0.5rem, 24cqh, 1rem); color:var(--text-sub); border-right:1px solid var(--border-color);">${rawDisp}</span>
+                  <span style="width:33.33%; display:flex; align-items:center; justify-content:center; font-size:clamp(0.5rem, 24cqh, 1rem); color:var(--accent-cyan); border-right:1px solid var(--border-color);">${diffDisp}</span>
+                  <span style="width:33.33%; display:flex; align-items:center; justify-content:center; font-size:clamp(0.5rem, 24cqh, 1rem); color:${modVal < 0 ? 'var(--accent-red)' : 'var(--spare-color)'};">${modDisp}</span>
+                </div>
+                <div class="frame-bottom">
+                  ${Math.round(res.subtotal)}
+                </div>
+              </div>
+            `;
+          } else {
+            let markClass = "";
+            let markText = "";
+            if (res.isStrike) { markClass = "mark-strike"; markText = "X"; }
+            else if (res.isSpare) { markClass = "mark-spare"; markText = "/"; }
+            else {
+              markClass = "mark-g";
+              markText = res.diff <= 0 ? "G" : `${Math.round(res.diff)}`;
+            }
+            td.innerHTML = `
+              <div class="frame-box" onclick="selectCell(${t}, ${s})">
+                <div class="frame-top">
+                  <span class="raw-score-val">${Math.round(scoreData.rawScore)}</span>
+                  <span class="mark-val ${markClass}">${markText}</span>
+                </div>
+                <div class="frame-bottom">
+                  ${res.isWaiting ? `<span class="waiting-text">次曲待ち</span>` : Math.round(res.subtotal)}
+                </div>
+              </div>
+            `;
           }
-          td.innerHTML = `
-            <div class="frame-box" onclick="selectCell(${t}, ${s})">
-              <div class="frame-top">
-                <span class="raw-score-val">${Math.round(scoreData.rawScore)}</span>
-                <span class="mark-val ${markClass}">${markText}</span>
-              </div>
-              <div class="frame-bottom">
-                ${res.isWaiting ? `<span class="waiting-text">次曲待ち</span>` : Math.round(res.subtotal)}
-              </div>
-            </div>
-          `;
         } else {
           td.innerHTML = `
             <div class="frame-box" onclick="selectCell(${t}, ${s})">
@@ -1839,7 +1886,7 @@
     if (existing) {
       if (titleInput) titleInput.value = existing.title || "";
       initialRaw = Math.round(existing.rawScore);
-      initialAvg = Math.round(existing.avgScore);
+      initialAvg = Math.round(existing.avgScore !== undefined ? existing.avgScore : (existing.averageScore || 85));
       if (saveBtn) saveBtn.textContent = "更新";
     } else {
       if (titleInput) titleInput.value = "";
@@ -2287,6 +2334,11 @@
           filledSongs++;
           teamFinalTotal += res.subtotal;
 
+          let bonusStr = res.isWaiting ? "次曲待ち" : Math.round(res.bonus);
+          if (res.isBattleFinal) {
+            bonusStr = res.battleModifier >= 0 ? `+${Math.round(res.battleModifier)} (バトル)` : `${Math.round(res.battleModifier)} (バトル)`;
+          }
+
           html += `
             <tr>
               <td>${s + 1}</td>
@@ -2299,7 +2351,7 @@
               <td>${res.displayDiff}</td>
               <td>${res.mark}</td>
               <td>${Math.round(res.baseScore)}</td>
-              <td>${res.isWaiting ? "次曲待ち" : Math.round(res.bonus)}</td>
+              <td>${bonusStr}</td>
               <td><b>${res.isWaiting ? Math.round(res.baseScore) : Math.round(res.subtotal)}</b></td>
             </tr>
           `;
@@ -2430,10 +2482,8 @@
 
     ensureConditionsArrays();
 
-    // 最終フレームの全員共通条件が既にセットされている場合は発動しない
     if (gameState.frameConditions[lastSongIdx]) return;
 
-    // 最終フレームの手前（1〜最終-1曲目）がすべて入力済みかチェック
     let preFinalCompleted = true;
     for (let t = 0; t < teamCount; t++) {
       for (let s = 0; s < lastSongIdx; s++) {
@@ -2446,11 +2496,7 @@
     }
 
     if (preFinalCompleted && gameState.activeCell.songIdx === lastSongIdx) {
-      setTimeout(() => {
-        if (confirm("最終フレームに入りました！バトルステージを開始しますか？")) {
-          startBattle();
-        }
-      }, 300);
+      startBattle();
     }
   }
 
@@ -2514,18 +2560,42 @@
     if (resultSaved) {
       try {
         const resultData = JSON.parse(resultSaved);
-        console.log("バトル結果を受信しました:", resultData);
 
-        // バトルで決定した特殊ゲーム内容（ルール）を最終フレーム全員共通条件としてセット
-        const battleCondition = resultData.condition || resultData.selectedGame || resultData.gameTitle || resultData.title;
-        if (battleCondition) {
-          const lastSongIdx = gameState.settings.songCount - 1;
-          ensureConditionsArrays();
-          gameState.frameConditions[lastSongIdx] = battleCondition;
-          gameState.currentCondition = battleCondition;
-          saveState();
+        const battleCondition = resultData.condition || resultData.selectedGame || resultData.gameTitle || resultData.title || resultData.stage || "【最終バトル】";
+        const lastSongIdx = gameState.settings.songCount - 1;
+        ensureConditionsArrays();
+        gameState.frameConditions[lastSongIdx] = battleCondition;
+        gameState.currentCondition = battleCondition;
+
+        if (Array.isArray(resultData.results)) {
+          resultData.results.forEach(res => {
+            const teamIdx = typeof res.teamIndex === "number" ? res.teamIndex : 0;
+            if (teamIdx >= 0 && teamIdx < gameState.settings.teamCount) {
+              if (!gameState.scores[teamIdx]) {
+                gameState.scores[teamIdx] = [];
+              }
+              const rawScore = typeof res.rawScore === "number" ? res.rawScore : 0;
+              const avgScore = typeof res.averageScore === "number" ? res.averageScore : (typeof res.avgScore === "number" ? res.avgScore : 0);
+              const averageDifference = typeof res.averageDifference === "number" ? res.averageDifference : (rawScore - avgScore);
+              const battleModifier = typeof res.battleModifier === "number" ? res.battleModifier : 0;
+              const battleScore = typeof res.battleScore === "number" ? res.battleScore : (rawScore + averageDifference + battleModifier);
+
+              gameState.scores[teamIdx][lastSongIdx] = {
+                rawScore: rawScore,
+                avgScore: avgScore,
+                title: res.songTitle || res.title || "",
+                condition: res.condition || battleCondition,
+                battleStage: res.stage || resultData.stage || "",
+                battleModifier: battleModifier,
+                averageDifference: averageDifference,
+                battleScore: battleScore
+              };
+            }
+          });
         }
 
+        saveState();
+        renderApp();
         localStorage.removeItem(BATTLE_RESULT_KEY);
       } catch (e) {
         console.error("バトル結果データの解析エラー", e);
