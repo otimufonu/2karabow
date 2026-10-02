@@ -2569,7 +2569,8 @@
 
         if (Array.isArray(resultData.results)) {
           resultData.results.forEach(res => {
-            const teamIdx = typeof res.teamIndex === "number" ? res.teamIndex : 0;
+            const teamIdx = Number.isInteger(res.teamIndex) ? res.teamIndex : -1;
+            if (teamIdx < 0 || teamIdx >= gameState.settings.teamCount) return;
             if (teamIdx >= 0 && teamIdx < gameState.settings.teamCount) {
               if (!gameState.scores[teamIdx]) {
                 gameState.scores[teamIdx] = [];
