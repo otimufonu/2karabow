@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <title>赤白ボーカル - カラオケボウリング</title>
+  <style>
+    /* ==========================================
+       1. 基本設定 & テーマカラー
+       ========================================== */
+    :root {
+      --bg-dark: #0b0d12;
+      --panel-bg: rgba(22, 26, 34, 0.95);
+      --border-color: #2a3142;
+      --text-main: #ffffff;
+      --text-sub: #a0a8b8;
+
+      --red-bg: #c62828;
+      --red-bg-gradient: linear-gradient(135deg, #d32f2f 0%, #8e0000 100%);
+      --red-text: #ffffff;
+
+      --white-bg: #f8f9fa;
+      --white-bg-gradient: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+      --white-text: #111111;
+
+      --accent-gold: #ffd700;
+      --accent-cyan: #00e5ff;
+      --accent-green: #34c759;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body, html {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      overflow: hidden;
+      position: fixed;
+    }
+
+    #app {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* 共通ボタン */
+    .btn {
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s, background-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .btn:active {
+      transform: scale(0.96);
+    }
+    .btn-primary { background: #0055b8; color: #fff; }
+    .btn-success { background: #1b7a3e; color: #fff; }
+    .btn-warning { background: #b75300; color: #fff; }
+    .btn-gold { background: linear-gradient(135deg, #ffd700 0%, #ff9800 100%); color: #000; }
+
+    /* ==========================================
+       2. 各画面（フェーズ）の制御
+       ========================================== */
+    .phase-screen {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: none;
+      flex-direction: column;
+      padding: 16px;
+      z-index: 10;
+    }
+    .phase-screen.active {
+      display: flex;
+    }
+
+    /* --- STEP 1: メンバー設定・準備画面 --- */
+    #screen-setup {
+      background: var(--bg-dark);
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+    }
+    .setup-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .setup-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      text-align: center;
+      color: var(--accent-gold);
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+    .team-setup-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .team-setup-box h4 {
+      color: var(--accent-cyan);
+      font-size: 1rem;
+    }
+    .form-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .form-row label {
+      width: 60px;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+    .form-control {
+      flex: 1;
+      background: #0f1218;
+      border: 1px solid #333a4d;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+
+    /* --- STEP 2 & 4: 赤白ボーカル ライブ操作画面 --- */
+    #screen-live {
+      transition: background 0.4s ease, color 0.4s ease;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+    }
+    #screen-live.mode-red {
+      background: var(--red-bg-gradient);
+      color: var(--red-text);
+    }
+    #screen-live.mode-white {
+      background: var(--white-bg-gradient);
+      color: var(--white-text);
+    }
+
+    .live-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 8px;
+      backdrop-filter: blur(4px);
+    }
+    .singing-team-badge {
+      font-size: 1.1rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+    .operator-info {
+      font-size: 0.85rem;
+      font-weight: bold;
+      opacity: 0.9;
+    }
+
+    .singer-display-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+    .singer-role-tag {
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: bold;
+      padding: 4px 16px;
+      border-radius: 20px;
+      letter-spacing: 2px;
+    }
+    .mode-red .singer-role-tag {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+    .mode-white .singer-role-tag {
+      background: rgba(0, 0, 0, 0.1);
+      color: #111;
+    }
+
+    .singer-name-huge {
+      font-size: clamp(3rem, 12vw, 7rem);
+      font-weight: 900;
+      line-height: 1.1;
+      word-break: break-all;
+      text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      padding: 0 10px;
+    }
+
+    .attack-count-badge {
+      font-size: clamp(1rem, 3.5vw, 1.5rem);
+      font-weight: bold;
+      margin-top: 10px;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 6px 18px;
+      border-radius: 20px;
+    }
+
+    .live-footer {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding-bottom: 20px;
+    }
+
+    /* 切り替え巨大ボタン */
+    .switch-btn-container {
+      width: 90%;
+      max-width: 420px;
+      height: 110px;
+      position: relative;
+    }
+
+    .switch-btn {
+      width: 100%;
+      height: 100%;
+      border-radius: 20px;
+      border: 4px solid transparent;
+      font-size: clamp(1.4rem, 5vw, 2.2rem);
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    .switch-btn:active:not(:disabled) {
+      transform: translateY(4px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+
+    /* 赤背景の時のボタン（反対色の白） */
+    .mode-red .switch-btn {
+      background: #ffffff;
+      color: #d32f2f;
+      border-color: #ffffff;
+    }
+    /* 白背景の時のボタン（反対色の赤） */
+    .mode-white .switch-btn {
+      background: #d32f2f;
+      color: #ffffff;
+      border-color: #b71c1c;
+    }
+
+    /* 3秒ロック状態のプログレスアニメーション */
+    .switch-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.75;
+    }
+    .lock-progress-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: rgba(0, 0, 0, 0.25);
+      pointer-events: none;
+      transition: width 0.05s linear;
+    }
+
+    .btn-finish-song {
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    /* --- STEP 3 & 5: スコア入力モーダル/画面 --- */
+    #screen-input {
+      background: var(--bg-dark);
+      align-items: center;
+      justify-content: center;
+    }
+    .input-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .input-card-title {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--accent-gold);
+      text-align: center;
+    }
+
+    /* --- STEP 6: 最終結果 順次発表画面 --- */
+    #screen-result {
+      background: var(--bg-dark);
+      align-items: center;
+      justify-content: flex-start;
+      overflow-y: auto;
+    }
+    .result-container {
+      width: 100%;
+      max-width: 650px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-bottom: 40px;
+    }
+    .result-header-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      text-align: center;
+      color: var(--accent-gold);
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      margin-top: 10px;
+    }
+
+    /* ステップカード */
+    .res-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeInSlideUp 0.5s ease forwards;
+    }
+    .res-card.show {
+      display: flex;
+    }
+
+    @keyframes fadeInSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .res-card-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: var(--accent-cyan);
+      border-bottom: 1px dashed var(--border-color);
+      padding-bottom: 6px;
+    }
+
+    .teams-compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .team-res-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+    }
+    .team-res-box.winner {
+      border-color: var(--accent-gold);
+      background: rgba(255, 215, 0, 0.08);
+    }
+    .winner-badge {
+      position: absolute;
+      top: -10px;
+      right: -5px;
+      background: var(--accent-gold);
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 900;
+      padding: 2px 8px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .val-highlight {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--accent-gold);
+    }
+
+    .next-step-btn-area {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <!-- STEP 1: 準備・メンバー設定 -->
+  <div id="screen-setup" class="phase-screen active">
+    <div class="setup-card">
+      <div class="setup-title">🎤 赤白ボーカル 準備</div>
+      <div style="font-size: 0.82rem; color: var(--text-sub); line-height: 1.4;">
+        1チーム2人による分担歌唱バトル！相手チームがPC画面を操作し歌唱者を切り替えます。勝者は相手からの攻撃回数がボーナスに、敗者はペナルティになります。
+      </div>
+
+      <!-- チームA設定 -->
+      <div class="team-setup-box">
+        <h4 id="teamA-title-label">チームA</h4>
+        <div class="form-row">
+          <label>赤担当:</label>
+          <input type="text" id="input-team0-red" class="form-control" value="プレイヤー1">
+        </div>
+        <div class="form-row">
+          <label>白担当:</label>
+          <input type="text" id="input-team0-white" class="form-control" value="プレイヤー2">
+        </div>
+      </div>
+
+      <!-- チームB設定 -->
+      <div class="team-setup-box">
+        <h4 id="teamB-title-label">チームB</h4>
+        <div class="form-row">
+          <label>赤担当:</label>
+          <input type="text" id="input-team1-red" class="form-control" value="プレイヤー3">
+        </div>
+        <div class="form-row">
+          <label>白担当:</label>
+          <input type="text" id="input-team1-white" class="form-control" value="プレイヤー4">
+        </div>
+      </div>
+
+      <button class="btn btn-gold" style="width: 100%; margin-top: 8px;" onclick="startFirstTeamLive()">
+        🔥 バトルスタート (先攻歌唱へ)
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 2 & 4: ライブ歌唱・切り替え操作画面 -->
+  <div id="screen-live" class="phase-screen mode-red">
+    <div class="live-header">
+      <div class="singing-team-badge" id="live-team-name">チームA 歌唱中</div>
+      <div class="operator-info" id="live-operator-info">操作：チームB</div>
+    </div>
+
+    <div class="singer-display-area">
+      <div class="singer-role-tag" id="live-role-tag">🔴 赤担当</div>
+      <div class="singer-name-huge" id="live-singer-name">----</div>
+      <div class="attack-count-badge" id="live-switch-count">攻撃切替回数: 0 回</div>
+    </div>
+
+    <div class="live-footer">
+      <div class="switch-btn-container">
+        <button id="btn-switch-singer" class="switch-btn" onclick="handleSingerSwitch()">
+          <span id="switch-btn-text">CHANGE ➔ 白へ</span>
+          <div id="lock-progress" class="lock-progress-bar"></div>
+        </button>
+      </div>
+      <button class="btn-finish-song" onclick="finishCurrentSinging()">🎵 演奏終了 (スコア入力へ)</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 & 5: スコア入力画面 -->
+  <div id="screen-input" class="phase-screen">
+    <div class="input-card">
+      <div class="input-card-title" id="input-screen-title">チームA 採点結果入力</div>
+      <div style="font-size:0.8rem; color:var(--text-sub); text-align:center;">
+        1曲を2人で分担して歌ったカラオケ機器の採点結果を入力してください。
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-top:10px;">
+        <div class="form-row">
+          <label style="width:80px;">曲名:</label>
+          <input type="text" id="input-song-title" class="form-control" placeholder="例: 残響散歌">
+        </div>
+
+        <div class="form-row">
+          <label style="width:80px;">素点:</label>
+          <input type="number" step="0.1" id="input-raw-score" class="form-control" value="87.4" placeholder="例: 87.4">
+        </div>
+
+        <div class="form-row">
+          <label style="width:80px;">全国平均:</label>
+          <input type="number" step="0.1" id="input-avg-score" class="form-control" value="85.0" placeholder="例: 85.0">
+        </div>
+      </div>
+
+      <button class="btn btn-success" style="width:100%; margin-top:12px;" onclick="submitTeamScore()">
+        保存して次へ
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 6: 最終結果 順次発表画面 -->
+  <div id="screen-result" class="phase-screen">
+    <div class="result-container">
+      <div class="result-header-title">🏆 赤白ボーカル 最終結果</div>
+
+      <!-- Step Card 1: 素点＆平均点 -->
+      <div id="res-card-1" class="res-card">
+        <div class="res-card-title">① 素点 ＆ 平均差 (averageDifference)</div>
+        <div class="teams-compare-grid">
+          <div class="team-res-box">
+            <h4 id="res-team0-name">チームA</h4>
+            <div style="font-size:0.75rem; color:var(--text-sub);" id="res-team0-song">曲名</div>
+            <div>素点: <span class="val-highlight" id="res-team0-raw">0.0</span></div>
+            <div style="font-size:0.85rem;">平均差: <span id="res-team0-diff">+0.0</span></div>
+          </div>
+          <div class="team-res-box">
+            <h4 id="res-team1-name">チームB</h4>
+            <div style="font-size:0.75rem; color:var(--text-sub);" id="res-team1-song">曲名</div>
+            <div>素点: <span class="val-highlight" id="res-team1-raw">0.0</span></div>
+            <div style="font-size:0.85rem;">平均差: <span id="res-team1-diff">+0.0</span></div>
+          </div>
+        </div>
+        <div class="next-step-btn-area">
+          <button id="btn-next-step-1" class="btn btn-primary" onclick="showResultStep(2)">🔥 勝敗判定を行う</button>
+        </div>
+      </div>
+
+      <!-- Step Card 2: 素点対決・勝敗判定 -->
+      <div id="res-card-2" class="res-card">
+        <div class="res-card-title">② 小数点以下の素点勝負・勝敗結果</div>
+        <div class="teams-compare-grid">
+          <div id="res-team0-box-step2" class="team-res-box">
+            <span id="res-team0-win-badge" class="winner-badge" style="display:none;">WINNER!</span>
+            <h4 id="res-team0-name-2">チームA</h4>
+            <div class="val-highlight" id="res-team0-raw-2">0.0</div>
+          </div>
+          <div id="res-team1-box-step2" class="team-res-box">
+            <span id="res-team1-win-badge" class="winner-badge" style="display:none;">WINNER!</span>
+            <h4 id="res-team1-name-2">チームB</h4>
+            <div class="val-highlight" id="res-team1-raw-2">0.0</div>
+          </div>
+        </div>
+        <div id="res-judge-text" style="text-align:center; font-weight:bold; color:var(--accent-gold); font-size:1.1rem; margin-top:4px;">
+          勝者決定！
+        </div>
+        <div class="next-step-btn-area">
+          <button id="btn-next-step-2" class="btn btn-primary" onclick="showResultStep(3)">⚡ 切替攻撃補正を適用</button>
+        </div>
+      </div>
+
+      <!-- Step Card 3: 赤白バトル補正 calculation -->
+      <div id="res-card-3" class="res-card">
+        <div class="res-card-title">③ 赤白バトル補正 (battleModifier)</div>
+        <div style="font-size:0.8rem; color:var(--text-sub);">
+          勝者は「相手から切り替えられた回数」がプラスに！負けたチームはペナルティマイナス！
+        </div>
+        <div class="teams-compare-grid">
+          <div class="team-res-box">
+            <h4 id="res-team0-name-3">チームA</h4>
+            <div style="font-size:0.8rem;">被切替: <b id="res-team0-switches">0</b> 回</div>
+            <div>補正: <span class="val-highlight" id="res-team0-mod">+0</span></div>
+          </div>
+          <div class="team-res-box">
+            <h4 id="res-team1-name-3">チームB</h4>
+            <div style="font-size:0.8rem;">被切替: <b id="res-team1-switches">0</b> 回</div>
+            <div>補正: <span class="val-highlight" id="res-team1-mod">-0</span></div>
+          </div>
+        </div>
+        <div class="next-step-btn-area">
+          <button id="btn-next-step-3" class="btn btn-primary" onclick="showResultStep(4)">🎯 最終得点を算出 (小数点切捨て)</button>
+        </div>
+      </div>
+
+      <!-- Step Card 4: 最終得点 算出 -->
+      <div id="res-card-4" class="res-card">
+        <div class="res-card-title">④ 赤白ステージ獲得得点 (切り捨て後)</div>
+        <div class="teams-compare-grid">
+          <div class="team-res-box">
+            <h4 id="res-team0-name-4">チームA</h4>
+            <div style="font-size:0.75rem; color:var(--text-sub);" id="res-team0-formula">素点 + 平均差 + 補正</div>
+            <div>最終獲得: <span class="val-highlight" style="color:var(--accent-cyan);" id="res-team0-final">0</span> 点</div>
+          </div>
+          <div class="team-res-box">
+            <h4 id="res-team1-name-4">チームB</h4>
+            <div style="font-size:0.75rem; color:var(--text-sub);" id="res-team1-formula">素点 + 平均差 + 補正</div>
+            <div>最終獲得: <span class="val-highlight" style="color:var(--accent-cyan);" id="res-team1-final">0</span> 点</div>
+          </div>
+        </div>
+
+        <div style="font-size:0.75rem; color:var(--text-sub); border-top:1px dashed var(--border-color); padding-top:6px; margin-top:4px;">
+          ※前フレームがストライク/スペアの場合、加算されるのは「平均差 (averageDifference)」の倍率分であり、赤白補正 (battleModifier) は倍増しません。
+        </div>
+
+        <div class="next-step-btn-area">
+          <button class="btn btn-gold" style="width:100%; padding:14px;" onclick="returnToMainApp()">
+            ✨ 確定して総合スコア表に戻る
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const BATTLE_DATA_KEY = "karaokeBowlingBattleData";
+  const BATTLE_RESULT_KEY = "karaokeBowlingBattleResult";
+
+  /* ------------------------------------------
+     Web Audio API (切り替え時ビープ音)
+     ------------------------------------------ */
+  let audioCtx = null;
+  function playBeep() {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    } catch (e) {
+      console.error("Audio error:", e);
+    }
+  }
+
+  /* ------------------------------------------
+     ゲーム状態データ
+     ------------------------------------------ */
+  let battleState = {
+    teams: [
+      { name: "チームA", red: "プレイヤー1", white: "プレイヤー2" },
+      { name: "チームB", red: "プレイヤー3", white: "プレイヤー4" }
+    ],
+    currentSingingTeamIdx: 0, // 0: 先攻(チームA), 1: 後攻(チームB)
+    currentSingerRole: "red", // "red" or "white"
+    switches: [0, 0], // switches[0]: チーム0歌唱中にチーム1が切り替えた回数（チーム0への被攻撃数）
+    scores: [null, null], // [ { songTitle, rawScore, avgScore }, ... ]
+    lockTimer: null,
+    lockRemainingMs: 0
+  };
+
+  window.addEventListener("DOMContentLoaded", () => {
+    loadBattleInitData();
+  });
+
+  function loadBattleInitData() {
+    const raw = localStorage.getItem(BATTLE_DATA_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed.settings && parsed.settings.teamNames) {
+          battleState.teams[0].name = parsed.settings.teamNames[0] || "チームA";
+          battleState.teams[1].name = parsed.settings.teamNames[1] || "チームB";
+        }
+      } catch (e) {
+        console.error("データ読込失敗", e);
+      }
+    }
+
+    document.getElementById("teamA-title-label").textContent = battleState.teams[0].name;
+    document.getElementById("teamB-title-label").textContent = battleState.teams[1].name;
+  }
+
+  function showScreen(screenId) {
+    document.querySelectorAll(".phase-screen").forEach(s => s.classList.remove("active"));
+    const target = document.getElementById(screenId);
+    if (target) target.classList.add("active");
+  }
+
+  /* ------------------------------------------
+     STEP 1 ➔ STEP 2 (先攻スタート)
+     ------------------------------------------ */
+  function startFirstTeamLive() {
+    battleState.teams[0].red = document.getElementById("input-team0-red").value.trim() || "赤担当";
+    battleState.teams[0].white = document.getElementById("input-team0-white").value.trim() || "白担当";
+    battleState.teams[1].red = document.getElementById("input-team1-red").value.trim() || "赤担当";
+    battleState.teams[1].white = document.getElementById("input-team1-white").value.trim() || "白担当";
+
+    battleState.currentSingingTeamIdx = 0;
+    setupLiveScreen();
+    showScreen("screen-live");
+  }
+
+  /* ------------------------------------------
+     LIVE 歌唱画面のセットアップ
+     ------------------------------------------ */
+  function setupLiveScreen() {
+    const singingIdx = battleState.currentSingingTeamIdx;
+    const operatorIdx = 1 - singingIdx;
+    const team = battleState.teams[singingIdx];
+    const opTeam = battleState.teams[operatorIdx];
+
+    document.getElementById("live-team-name").textContent = `${team.name} 歌唱中`;
+    document.getElementById("live-operator-info").textContent = `操作チーム：${opTeam.name}`;
+
+    battleState.currentSingerRole = "red";
+    updateLiveUI();
+  }
+
+  function updateLiveUI() {
+    const screen = document.getElementById("screen-live");
+    const roleTag = document.getElementById("live-role-tag");
+    const singerName = document.getElementById("live-singer-name");
+    const switchCountBadge = document.getElementById("live-switch-count");
+    const btnText = document.getElementById("switch-btn-text");
+
+    const singingIdx = battleState.currentSingingTeamIdx;
+    const team = battleState.teams[singingIdx];
+
+    if (battleState.currentSingerRole === "red") {
+      screen.className = "phase-screen active mode-red";
+      roleTag.textContent = "🔴 赤担当";
+      singerName.textContent = team.red;
+      btnText.textContent = "CHANGE ➔ 白へ";
+    } else {
+      screen.className = "phase-screen active mode-white";
+      roleTag.textContent = "⚪ 白担当";
+      singerName.textContent = team.white;
+      btnText.textContent = "CHANGE ➔ 赤へ";
+    }
+
+    switchCountBadge.textContent = `相手からの攻撃切替数: ${battleState.switches[singingIdx]} 回`;
+  }
+
+  /* ------------------------------------------
+     切り替えボタン処理 (3秒ロック付き)
+     ------------------------------------------ */
+  function handleSingerSwitch() {
+    if (battleState.lockRemainingMs > 0) return;
+
+    playBeep();
+
+    const singingIdx = battleState.currentSingingTeamIdx;
+    battleState.switches[singingIdx]++;
+
+    // ロール切替
+    battleState.currentSingerRole = (battleState.currentSingerRole === "red") ? "white" : "red";
+    updateLiveUI();
+
+    // 3秒ロック開始
+    startLockTimer(3000);
+  }
+
+  function startLockTimer(durationMs) {
+    const btn = document.getElementById("btn-switch-singer");
+    const progressBar = document.getElementById("lock-progress");
+    btn.disabled = true;
+
+    battleState.lockRemainingMs = durationMs;
+    const startTime = Date.now();
+
+    if (battleState.lockTimer) clearInterval(battleState.lockTimer);
+
+    battleState.lockTimer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      battleState.lockRemainingMs = Math.max(0, durationMs - elapsed);
+
+      const percent = (battleState.lockRemainingMs / durationMs) * 100;
+      progressBar.style.width = `${percent}%`;
+
+      if (battleState.lockRemainingMs <= 0) {
+        clearInterval(battleState.lockTimer);
+        btn.disabled = false;
+        progressBar.style.width = "0%";
+      }
+    }, 50);
+  }
+
+  /* ------------------------------------------
+     演奏終了 ➔ スコア入力
+     ------------------------------------------ */
+  function finishCurrentSinging() {
+    if (battleState.lockTimer) clearInterval(battleState.lockTimer);
+    battleState.lockRemainingMs = 0;
+    document.getElementById("btn-switch-singer").disabled = false;
+
+    const singingIdx = battleState.currentSingingTeamIdx;
+    const team = battleState.teams[singingIdx];
+
+    document.getElementById("input-screen-title").textContent = `${team.name} 採点結果入力`;
+    document.getElementById("input-song-title").value = "";
+    document.getElementById("input-raw-score").value = "87.4";
+    document.getElementById("input-avg-score").value = "85.0";
+
+    showScreen("screen-input");
+  }
+
+  function submitTeamScore() {
+    const title = document.getElementById("input-song-title").value.trim() || "課題曲";
+    const rawVal = parseFloat(document.getElementById("input-raw-score").value);
+    const avgVal = parseFloat(document.getElementById("input-avg-score").value);
+
+    if (isNaN(rawVal) || isNaN(avgVal)) {
+      alert("素点と全国平均を数字で正しく入力してください。");
+      return;
+    }
+
+    const singingIdx = battleState.currentSingingTeamIdx;
+    battleState.scores[singingIdx] = {
+      title: title,
+      rawScore: rawVal,
+      avgScore: avgVal
+    };
+
+    if (singingIdx === 0) {
+      // 次は後攻(チームB)の歌唱へ
+      battleState.currentSingingTeamIdx = 1;
+      setupLiveScreen();
+      showScreen("screen-live");
+    } else {
+      // 両チーム終了！ 最終結果発表画面へ
+      setupResultPhase();
+      showScreen("screen-result");
+    }
+  }
+
+  /* ------------------------------------------
+     最終結果 順次発表フェーズ
+     ------------------------------------------ */
+  let calculatedResults = null;
+
+  function setupResultPhase() {
+    const s0 = battleState.scores[0];
+    const s1 = battleState.scores[1];
+    const sw0 = battleState.switches[0]; // チーム0が受けた切替数
+    const sw1 = battleState.switches[1]; // チーム1が受けた切替数
+
+    const diff0 = s0.rawScore - s0.avgScore;
+    const diff1 = s1.rawScore - s1.avgScore;
+
+    // 勝敗判定（小数点以下まで含む）
+    let winner = -1; // 0: Team0, 1: Team1, -1: Draw
+    let mod0 = 0;
+    let mod1 = 0;
+
+    if (s0.rawScore > s1.rawScore) {
+      winner = 0;
+      mod0 = sw0;
+      mod1 = -sw1;
+    } else if (s1.rawScore > s0.rawScore) {
+      winner = 1;
+      mod1 = sw1;
+      mod0 = -sw0;
+    } else {
+      winner = -1;
+      mod0 = 0;
+      mod1 = 0;
+    }
+
+    const unfloored0 = s0.rawScore + diff0 + mod0;
+    const unfloored1 = s1.rawScore + diff1 + mod1;
+
+    const final0 = Math.floor(unfloored0);
+    const final1 = Math.floor(unfloored1);
+
+    calculatedResults = {
+      winner,
+      team0: { name: battleState.teams[0].name, title: s0.title, raw: s0.rawScore, avg: s0.avgScore, diff: diff0, switches: sw0, mod: mod0, unfloored: unfloored0, final: final0 },
+      team1: { name: battleState.teams[1].name, title: s1.title, raw: s1.rawScore, avg: s1.avgScore, diff: diff1, switches: sw1, mod: mod1, unfloored: unfloored1, final: final1 }
+    };
+
+    // Card 1 の流し込み
+    document.getElementById("res-team0-name").textContent = calculatedResults.team0.name;
+    document.getElementById("res-team0-song").textContent = calculatedResults.team0.title;
+    document.getElementById("res-team0-raw").textContent = calculatedResults.team0.raw.toFixed(1);
+    document.getElementById("res-team0-diff").textContent = (diff0 >= 0 ? "+" : "") + diff0.toFixed(1);
+
+    document.getElementById("res-team1-name").textContent = calculatedResults.team1.name;
+    document.getElementById("res-team1-song").textContent = calculatedResults.team1.title;
+    document.getElementById("res-team1-raw").textContent = calculatedResults.team1.raw.toFixed(1);
+    document.getElementById("res-team1-diff").textContent = (diff1 >= 0 ? "+" : "") + diff1.toFixed(1);
+
+    // Card 2 の流し込み
+    document.getElementById("res-team0-name-2").textContent = calculatedResults.team0.name;
+    document.getElementById("res-team0-raw-2").textContent = calculatedResults.team0.raw.toFixed(1);
+    document.getElementById("res-team1-name-2").textContent = calculatedResults.team1.name;
+    document.getElementById("res-team1-raw-2").textContent = calculatedResults.team1.raw.toFixed(1);
+
+    const box0 = document.getElementById("res-team0-box-step2");
+    const box1 = document.getElementById("res-team1-box-step2");
+    const badge0 = document.getElementById("res-team0-win-badge");
+    const badge1 = document.getElementById("res-team1-win-badge");
+    const judgeText = document.getElementById("res-judge-text");
+
+    box0.classList.remove("winner");
+    box1.classList.remove("winner");
+    badge0.style.display = "none";
+    badge1.style.display = "none";
+
+    if (winner === 0) {
+      box0.classList.add("winner");
+      badge0.style.display = "block";
+      judgeText.textContent = `素点勝利：${calculatedResults.team0.name}！`;
+    } else if (winner === 1) {
+      box1.classList.add("winner");
+      badge1.style.display = "block";
+      judgeText.textContent = `素点勝利：${calculatedResults.team1.name}！`;
+    } else {
+      judgeText.textContent = "完全同点！(両チーム 補正0)";
+    }
+
+    // Card 3 の流し込み
+    document.getElementById("res-team0-name-3").textContent = calculatedResults.team0.name;
+    document.getElementById("res-team0-switches").textContent = calculatedResults.team0.switches;
+    document.getElementById("res-team0-mod").textContent = (mod0 >= 0 ? "+" : "") + mod0;
+
+    document.getElementById("res-team1-name-3").textContent = calculatedResults.team1.name;
+    document.getElementById("res-team1-switches").textContent = calculatedResults.team1.switches;
+    document.getElementById("res-team1-mod").textContent = (mod1 >= 0 ? "+" : "") + mod1;
+
+    // Card 4 の流し込み
+    document.getElementById("res-team0-name-4").textContent = calculatedResults.team0.name;
+    document.getElementById("res-team0-formula").textContent = `${calculatedResults.team0.raw.toFixed(1)} + (${diff0.toFixed(1)}) + (${mod0}) = ${calculatedResults.team0.unfloored.toFixed(1)}`;
+    document.getElementById("res-team0-final").textContent = calculatedResults.team0.final;
+
+    document.getElementById("res-team1-name-4").textContent = calculatedResults.team1.name;
+    document.getElementById("res-team1-formula").textContent = `${calculatedResults.team1.raw.toFixed(1)} + (${diff1.toFixed(1)}) + (${mod1}) = ${calculatedResults.team1.unfloored.toFixed(1)}`;
+    document.getElementById("res-team1-final").textContent = calculatedResults.team1.final;
+
+    // 初期化：Step 1 だけ表示
+    document.querySelectorAll(".res-card").forEach(c => c.classList.remove("show"));
+    document.getElementById("res-card-1").classList.add("show");
+  }
+
+  function showResultStep(stepNum) {
+    const targetCard = document.getElementById(`res-card-${stepNum}`);
+    if (targetCard) {
+      targetCard.classList.add("show");
+      targetCard.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+  }
+
+  /* ------------------------------------------
+     結果を保存してメインアプリに復帰
+     ------------------------------------------ */
+  function returnToMainApp() {
+    if (!calculatedResults) return;
+
+    const battlePayload = {
+      condition: "赤白ボーカル",
+      results: [
+        {
+          teamIndex: 0,
+          title: calculatedResults.team0.title,
+          rawScore: calculatedResults.team0.raw,
+          avgScore: calculatedResults.team0.avg,
+          diff: calculatedResults.team0.diff,
+          battleModifier: calculatedResults.team0.mod,
+          battleScore: calculatedResults.team0.final,
+          switchesAgainst: calculatedResults.team0.switches
+        },
+        {
+          teamIndex: 1,
+          title: calculatedResults.team1.title,
+          rawScore: calculatedResults.team1.raw,
+          avgScore: calculatedResults.team1.avg,
+          diff: calculatedResults.team1.diff,
+          battleModifier: calculatedResults.team1.mod,
+          battleScore: calculatedResults.team1.final,
+          switchesAgainst: calculatedResults.team1.switches
+        }
+      ]
+    };
+
+    localStorage.setItem(BATTLE_RESULT_KEY, JSON.stringify(battlePayload));
+
+    // メイン画面へ戻る（あるいはブラウザの戻る）
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = "index.html";
+    }
+  }
+</script>
+</body>
+</html>
