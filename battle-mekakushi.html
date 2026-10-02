@@ -880,19 +880,7 @@ const resultObj = {
       const mainDataRaw = localStorage.getItem(MAIN_GAME_DATA_KEY);
       if (mainDataRaw) {
         const mainData = JSON.parse(mainDataRaw);
-        sessionState.results.forEach((res, idx) => {
-          if (mainData.scores && mainData.scores[idx]) {
-            const lastSongIdx = mainData.scores[idx].length - 1;
-            if (lastSongIdx >= 0) {
-              mainData.scores[idx][lastSongIdx] = {
-                rawScore: res.rawScore,
-                avgScore: res.averageScore,
-                title: res.songTitle,
-                condition: "【目隠し】"
-              };
-            }
-          }
-        });
+ 
         localStorage.setItem(MAIN_GAME_DATA_KEY, JSON.stringify(mainData));
       }
     } catch (e) {
