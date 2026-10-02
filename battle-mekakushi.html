@@ -656,10 +656,10 @@
       }));
 
       return {
-        id: idx,
-        playerName: pName,
-        lanes: lanes
-      };
+  id: typeof p.teamIndex === "number" ? p.teamIndex : idx,
+  playerName: pName,
+  lanes
+};
     });
 
     sessionState.currentIndex = 0;
@@ -786,19 +786,20 @@
     const finalTotal = previousTotal + previousLaneBonus + battleScore;
 
     // 結果オブジェクトの生成 (仕様20)
-    const resultObj = {
-      playerName: player.playerName,
-      songTitle: songTitle,
-      rawScore: rawScore,
-      averageScore: averageScore,
-      mistakes: mistakes,
-      battleModifier: battleModifier,
-      averageDifference: averageDifference,
-      battleScore: battleScore,
-      previousLaneBonus: previousLaneBonus,
-      previousTotal: previousTotal,
-      finalTotal: finalTotal
-    };
+const resultObj = {
+  teamIndex: player.id,
+  playerName: player.playerName,
+  songTitle: songTitle,
+  rawScore: rawScore,
+  averageScore: averageScore,
+  mistakes: mistakes,
+  battleModifier: battleModifier,
+  averageDifference: averageDifference,
+  battleScore: battleScore,
+  previousLaneBonus: previousLaneBonus,
+  previousTotal: previousTotal,
+  finalTotal: finalTotal
+};
 
     sessionState.results.push(resultObj);
 
