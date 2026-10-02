@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>過去の自分を超えろ - カラオケボウリング</title>
+  <style>
+    /* ==========================================
+       1. 基本設定・バトルステージテーマ（CSS）
+       ========================================== */
+    :root {
+      --bg-color: #07090e;
+      --card-bg: #121622;
+      --panel-bg: #1a202c;
+      --accent-blue: #00e5ff;
+      --accent-purple: #9d4edd;
+      --warning-yellow: #ffea00;
+      --danger-red: #ff1744;
+      --success-green: #00e676;
+      --text-main: #ffffff;
+      --text-sub: #90a4ae;
+      --border-color: #2c354d;
+      --btn-active-scale: 0.96;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body, html {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #battle-app {
+      width: 100%;
+      max-width: 900px;
+      height: 100%;
+      max-height: 700px;
+      background: radial-gradient(circle at center, #151a28 0%, #07090e 100%);
+      border: 2px solid var(--accent-purple);
+      box-shadow: 0 0 30px rgba(157, 78, 221, 0.3), inset 0 0 15px rgba(0, 229, 255, 0.15);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ヘッダー */
+    header {
+      height: 50px;
+      background: linear-gradient(180deg, #231238 0%, #0d0617 100%);
+      border-bottom: 2px solid var(--accent-purple);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-size: 1.1rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: var(--accent-blue);
+      text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stage-badge {
+      background: linear-gradient(135deg, var(--accent-purple), #5a189a);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: bold;
+      padding: 3px 10px;
+      border-radius: 4px;
+      letter-spacing: 1px;
+      box-shadow: 0 0 8px rgba(157, 78, 221, 0.5);
+    }
+
+    /* メインエリア */
+    main {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      overflow-y: auto;
+    }
+
+    /* パネル切り替え */
+    .view-panel {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      text-align: center;
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+
+    .view-panel.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* テキストスタイル */
+    .player-label {
+      font-size: 1.1rem;
+      color: var(--text-sub);
+      margin-bottom: 4px;
+      letter-spacing: 1px;
+    }
+
+    .player-name {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 900;
+      color: var(--warning-yellow);
+      text-shadow: 0 0 10px rgba(255, 234, 0, 0.4);
+      margin-bottom: 8px;
+    }
+
+    .pb-display-box {
+      background: rgba(157, 78, 221, 0.15);
+      border: 2px dashed var(--accent-purple);
+      border-radius: 12px;
+      padding: 16px 24px;
+      margin: 12px 0;
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pb-title {
+      font-size: 0.95rem;
+      color: var(--accent-blue);
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .pb-value {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 15px rgba(0, 229, 255, 0.8);
+    }
+
+    .rules-description {
+      font-size: 0.95rem;
+      color: var(--text-sub);
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    /* フォーム制御 */
+    .form-container {
+      width: 100%;
+      max-width: 450px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: left;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      font-weight: bold;
+    }
+
+    .form-control {
+      background: #090b10;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 1.1rem;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--accent-blue);
+    }
+
+    /* 結果カード・詳細表示 */
+    .result-card {
+      background: rgba(18, 22, 34, 0.95);
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px 24px;
+      width: 100%;
+      max-width: 520px;
+      margin: 10px 0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .calc-flow-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+      font-size: 1rem;
+    }
+
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .calc-row .label {
+      color: var(--text-sub);
+      font-weight: bold;
+    }
+
+    .calc-row .val {
+      font-weight: bold;
+      font-size: 1.15rem;
+      color: var(--text-main);
+    }
+
+    .calc-divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: 4px 0;
+    }
+
+    .bonus-box {
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid var(--accent-purple);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      margin: 6px 0;
+    }
+
+    .bonus-title {
+      font-size: 0.85rem;
+      color: var(--accent-purple);
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .bonus-formula {
+      font-size: 0.9rem;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .bonus-value {
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      margin-top: 4px;
+    }
+
+    .bonus-value.plus {
+      color: var(--success-green);
+      text-shadow: 0 0 12px rgba(0, 230, 118, 0.6);
+    }
+
+    .bonus-value.minus {
+      color: var(--danger-red);
+      text-shadow: 0 0 12px rgba(255, 23, 68, 0.6);
+    }
+
+    .battle-score-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0, 229, 255, 0.08);
+      border: 1px solid var(--accent-blue);
+      padding: 10px 16px;
+      border-radius: 8px;
+      margin-top: 6px;
+    }
+
+    .battle-score-title {
+      font-size: 1rem;
+      font-weight: bold;
+      color: var(--accent-blue);
+    }
+
+    .battle-score-val {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent-blue);
+      text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+    }
+
+    .prev-bonus-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--warning-yellow);
+      font-size: 0.9rem;
+      font-weight: bold;
+      padding: 4px 0;
+    }
+
+    .final-total-box {
+      border-top: 2px dashed var(--border-color);
+      padding-top: 8px;
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .final-total-val {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--warning-yellow);
+      text-shadow: 0 0 12px rgba(255, 234, 0, 0.5);
+    }
+
+    /* テーブル表示 */
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    .summary-table th, .summary-table td {
+      border: 1px solid var(--border-color);
+      padding: 10px 6px;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+
+    .summary-table th {
+      background: var(--panel-bg);
+      color: var(--text-sub);
+    }
+
+    .summary-table td.rank-1 {
+      color: var(--warning-yellow);
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    /* ボタン共通 */
+    .btn {
+      background: var(--panel-bg);
+      color: var(--text-main);
+      border: 2px solid var(--border-color);
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s;
+      outline: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:active {
+      transform: scale(var(--btn-active-scale));
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #00838f 0%, #006064 100%);
+      border-color: var(--accent-blue);
+      color: #fff;
+    }
+
+    .btn-purple {
+      background: linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%);
+      border-color: var(--accent-purple);
+      color: #fff;
+    }
+
+    .btn-finish {
+      background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+      border-color: var(--success-green);
+      color: #fff;
+    }
+
+    /* エラー表示エリア */
+    .error-box {
+      background: rgba(255, 23, 68, 0.15);
+      border: 2px solid var(--danger-red);
+      color: var(--danger-red);
+      padding: 16px;
+      border-radius: 10px;
+      font-weight: bold;
+      margin: 20px 0;
+      max-width: 500px;
+    }
+
+    @media (max-width: 600px) {
+      #battle-app { border: none; }
+      .result-card { padding: 14px 16px; }
+      .pb-value { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="battle-app">
+  <!-- ヘッダー -->
+  <header>
+    <div class="header-title">
+      ⚔️ BATTLE STAGE ⚔️
+    </div>
+    <div class="stage-badge">過去の自分を超えろ</div>
+  </header>
+
+  <main>
+    <!-- 画面1: ステージ案内・過去最高素点確認 (START) -->
+    <div id="view-start" class="view-panel active">
+      <div>
+        <div class="player-label">TARGET PLAYER</div>
+        <div id="start-player-name" class="player-name">PLAYER NAME</div>
+      </div>
+
+      <div class="pb-display-box" id="start-pb-box">
+        <div class="pb-title">撃破すべき敵 (過去最高素点)</div>
+        <div id="start-pb-value" class="pb-value">--.-</div>
+      </div>
+
+      <div class="rules-description">
+        「今回、自己ベストをどれだけ更新したか」×「今回の平均差」<br>
+        がバトルボーナス加算！過去の自分を倒せ！
+      </div>
+
+      <div id="start-error-area" class="error-box" style="display: none;"></div>
+
+      <button id="btn-start-next" class="btn btn-purple" style="width: 100%; max-width: 400px; font-weight: 900;" onclick="goToInputView()">
+        歌唱開始 / スコア入力へ
+      </button>
+    </div>
+
+    <!-- 画面2: スコア入力 (INPUT) -->
+    <div id="view-input" class="view-panel">
+      <div>
+        <div class="player-label">スコア入力</div>
+        <div id="input-player-name" class="player-name" style="font-size: 1.8rem; margin-bottom: 4px;">-</div>
+      </div>
+
+      <div class="pb-display-box" style="padding: 8px 16px; margin: 4px 0;">
+        <span class="pb-title" style="font-size: 0.8rem;">過去最高素点: </span>
+        <span id="input-pb-value" style="font-size: 1.3rem; font-weight: 900; color: var(--accent-blue);">--.-</span>
+      </div>
+
+      <div class="form-container">
+        <div class="form-group">
+          <label for="input-song-title">曲名 (任意)</label>
+          <input type="text" id="input-song-title" class="form-control" placeholder="例: 残響散歌">
+        </div>
+        <div class="form-group">
+          <label for="input-raw-score">今回の素点</label>
+          <input type="number" step="0.001" id="input-raw-score" class="form-control" placeholder="89.0" value="89.0">
+        </div>
+        <div class="form-group">
+          <label for="input-avg-score">今回の平均点</label>
+          <input type="number" step="0.001" id="input-avg-score" class="form-control" placeholder="80.0" value="80.0">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width: 100%; max-width: 450px; font-weight: 900;" onclick="submitPlayerResult()">
+        結果を計算する
+      </button>
+    </div>
+
+    <!-- 画面3: 個別プレイヤー計算結果 (PLAYER RESULT) -->
+    <div id="view-player-result" class="view-panel">
+      <div>
+        <div id="res-player-name" class="player-name">PLAYER 1</div>
+      </div>
+
+      <div class="result-card">
+        <div class="calc-flow-container">
+          <div class="calc-row">
+            <span class="label">過去最高素点:</span>
+            <span id="res-pb-val" class="val">87.0</span>
+          </div>
+          <div class="calc-row">
+            <span class="label">今回の素点:</span>
+            <span id="res-raw-val" class="val">89.0</span>
+          </div>
+          <div class="calc-row">
+            <span class="label">今回の平均差:</span>
+            <span id="res-avg-diff-val" class="val">+9.0</span>
+          </div>
+          <div class="calc-row">
+            <span class="label">自己ベスト更新幅:</span>
+            <span id="res-best-diff-val" class="val" style="color: var(--warning-yellow);">+2.0</span>
+          </div>
+
+          <div class="bonus-box">
+            <div class="bonus-title">BATTLE BONUS</div>
+            <div id="res-bonus-formula" class="bonus-formula">(+2.0) × (+9.0)</div>
+            <div id="res-bonus-val" class="bonus-value plus">+18.0</div>
+          </div>
+
+          <div class="battle-score-display">
+            <div class="battle-score-title">バトルフレーム得点</div>
+            <div id="res-battle-score-val" class="battle-score-val">116.0</div>
+          </div>
+
+          <div id="res-prev-bonus-row" class="prev-bonus-row" style="display: none;">
+            <span>直前レーンボーナス加算:</span>
+            <span id="res-prev-bonus-val">+0.0</span>
+          </div>
+
+          <div class="final-total-box">
+            <span style="font-size: 0.95rem; font-weight: bold; color: var(--text-sub);">最終合計スコア:</span>
+            <span id="res-final-total-val" class="final-total-val">0.0</span>
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-next-player" class="btn btn-primary" style="width: 100%; max-width: 400px; font-weight: 900;" onclick="proceedNextPlayer()">
+        次のプレイヤーへ
+      </button>
+    </div>
+
+    <!-- 画面4: 全体最終結果一覧 (FINAL SUMMARY) -->
+    <div id="view-final-summary" class="view-panel">
+      <div>
+        <div class="player-label">ALL PLAYERS FINISHED</div>
+        <div class="player-name" style="color: var(--accent-blue);">最終結果一覧</div>
+      </div>
+
+      <div style="width: 100%; max-width: 700px; overflow-x: auto;">
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>順位</th>
+              <th>プレイヤー</th>
+              <th>過去最高</th>
+              <th>今回素点</th>
+              <th>平均差</th>
+              <th>自己更新</th>
+              <th>Battle Bonus</th>
+              <th>最終合計</th>
+            </tr>
+          </thead>
+          <tbody id="summary-tbody">
+            <!-- JSで動的生成 -->
+          </tbody>
+        </table>
+      </div>
+
+      <button class="btn btn-finish" style="width: 100%; max-width: 400px; font-weight: 900;" onclick="finishAllBattlesAndReturn()">
+        結果を確定してメインへ戻る
+      </button>
+    </div>
+  </main>
+</div>
+
+<script>
+  /* ==========================================
+     2. Web Audio API による効果音生成
+     ========================================== */
+  let audioCtx = null;
+
+  function initAudio() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+  }
+
+  // 成功・更新ファンファーレ風サウンド
+  function playSuccessSound() {
+    try {
+      initAudio();
+      const now = audioCtx.currentTime;
+      
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(523.25, now); // C5
+      osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+      osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+      osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.6);
+    } catch (e) {
+      console.warn("Audio Error:", e);
+    }
+  }
+
+  // 未更新サウンド（低いトーン）
+  function playDownSound() {
+    try {
+      initAudio();
+      const now = audioCtx.currentTime;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(300, now);
+      osc.frequency.exponentialRampToValueAtTime(150, now + 0.3);
+
+      gain.gain.setValueAtTime(0.2, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(now);
+      osc.stop(now + 0.3);
+    } catch (e) {
+      console.warn("Audio Error:", e);
+    }
+  }
+
+  /* ==========================================
+     3. アプリケーション状態管理 & 定数
+     ========================================== */
+  const BATTLE_DATA_KEY = "karaokeBowlingBattleData";
+  const BATTLE_RESULT_KEY = "karaokeBowlingBattleResult";
+  const MAIN_GAME_DATA_KEY = "KARAOKE_BOWLING_DATA_V1";
+
+  let sessionState = {
+    players: [],         // 読み込まれたプレイヤー情報
+    currentIndex: 0,     // 現在の処理対象プレイヤー
+    results: []          // 各プレイヤーの計算結果一覧
+  };
+
+  window.addEventListener("DOMContentLoaded", () => {
+    loadInputData();
+    initPlayerView();
+  });
+
+  /* ==========================================
+     4. データ受領 & 過去最高素点抽出
+     ========================================== */
+  function loadInputData() {
+    const rawData = localStorage.getItem(BATTLE_DATA_KEY);
+    let loadedPayload = null;
+
+    if (rawData) {
+      try {
+        loadedPayload = JSON.parse(rawData);
+      } catch (e) {
+        console.error("バトルデータのパースに失敗:", e);
+      }
+    }
+
+    // デバッグ・単体テスト用デフォルトデータ
+    if (!loadedPayload || !loadedPayload.players || loadedPayload.players.length === 0) {
+      loadedPayload = {
+        players: [
+          {
+            name: "PLAYER 1",
+            lanes: [
+              { rawScore: 82.0, averageScore: 80.0, strike: false, spare: false },
+              { rawScore: 87.0, averageScore: 80.0, strike: false, spare: false },
+              { rawScore: 84.0, averageScore: 80.0, strike: false, spare: false },
+              { rawScore: 86.0, averageScore: 80.0, strike: true, spare: false }
+            ]
+          },
+          {
+            name: "PLAYER 2",
+            lanes: [
+              { rawScore: 78.5, averageScore: 81.0, strike: false, spare: false },
+              { rawScore: 83.2, averageScore: 80.0, strike: false, spare: true }
+            ]
+          }
+        ]
+      };
+    }
+
+    // 各プレイヤーデータ読み込み & 過去最高素点 (previousBestRawScore) の算出
+    sessionState.players = loadedPayload.players.map((p, idx) => {
+      const pName = p.playerName || p.name || `PLAYER ${idx + 1}`;
+      const lanesRaw = p.lanes || p.history || [];
+
+      const lanes = lanesRaw.map(l => ({
+        rawScore: parseFloat(l.rawScore) || 0,
+        averageScore: parseFloat(l.averageScore) || 0,
+        strike: !!l.strike,
+        spare: !!l.spare
+      }));
+
+      // 過去フレーム（今回のバトルフレーム開始前まで）からの自己最高素点算出
+      let previousBest = null;
+      if (lanes.length > 0) {
+        let maxVal = -Infinity;
+        lanes.forEach(l => {
+          if (!isNaN(l.rawScore) && l.rawScore > maxVal) {
+            maxVal = l.rawScore;
+          }
+        });
+        if (maxVal !== -Infinity) {
+          previousBest = maxVal;
+        }
+      }
+
+      return {
+        id: idx,
+        playerName: pName,
+        lanes: lanes,
+        previousBestRawScore: previousBest
+      };
+    });
+
+    sessionState.currentIndex = 0;
+    sessionState.results = [];
+  }
+
+  /* ==========================================
+     5. 画面切替 & フォーム制御
+     ========================================== */
+  function showView(viewId) {
+    document.querySelectorAll(".view-panel").forEach(panel => {
+      panel.classList.remove("active");
+    });
+    const target = document.getElementById(viewId);
+    if (target) target.classList.add("active");
+  }
+
+  function initPlayerView() {
+    const player = sessionState.players[sessionState.currentIndex];
+    if (!player) {
+      showFinalSummary();
+      return;
+    }
+
+    document.getElementById("start-player-name").textContent = player.playerName;
+
+    const pbBox = document.getElementById("start-pb-box");
+    const pbVal = document.getElementById("start-pb-value");
+    const errBox = document.getElementById("start-error-area");
+    const nextBtn = document.getElementById("btn-start-next");
+
+    if (player.previousBestRawScore !== null) {
+      pbVal.textContent = player.previousBestRawScore.toFixed(1);
+      pbBox.style.display = "flex";
+      errBox.style.display = "none";
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = "1";
+    } else {
+      // 過去最高素点が存在しないエラー処理
+      pbBox.style.display = "none";
+      errBox.style.display = "block";
+      errBox.textContent = `エラー: ${player.playerName} の過去最高素点データが存在しません。1〜4フレーム目の記録を確認してください。`;
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = "0.5";
+    }
+
+    showView("view-start");
+  }
+
+  function goToInputView() {
+    const player = sessionState.players[sessionState.currentIndex];
+    document.getElementById("input-player-name").textContent = player.playerName;
+    document.getElementById("input-pb-value").textContent = player.previousBestRawScore !== null ? player.previousBestRawScore.toFixed(1) : "--.-";
+    document.getElementById("input-song-title").value = "";
+    document.getElementById("input-raw-score").value = "89.0";
+    document.getElementById("input-avg-score").value = "80.0";
+    showView("view-input");
+  }
+
+  /* ==========================================
+     6. バトルロジックコア計算
+     ========================================== */
+  function submitPlayerResult() {
+    const rawScoreInput = parseFloat(document.getElementById("input-raw-score").value);
+    const avgScoreInput = parseFloat(document.getElementById("input-avg-score").value);
+    const songTitle = document.getElementById("input-song-title").value.trim() || "（曲名なし）";
+
+    if (isNaN(rawScoreInput) || isNaN(avgScoreInput)) {
+      alert("素点と平均点を正しい数値で入力してください。");
+      return;
+    }
+
+    const player = sessionState.players[sessionState.currentIndex];
+    const previousBestRawScore = player.previousBestRawScore;
+
+    if (previousBestRawScore === null) {
+      alert("過去最高素点が不完全なため計算できません。");
+      return;
+    }
+
+    // 1. 公式計算
+    const rawScore = rawScoreInput;
+    const averageScore = avgScoreInput;
+    const averageDifference = rawScore - averageScore;
+    const bestDiff = rawScore - previousBestRawScore; // 自己ベスト更新幅
+
+    // battleModifier = (rawScore - previousBestRawScore) * averageDifference
+    const battleModifier = bestDiff * averageDifference;
+
+    // battleScore = rawScore + averageDifference + battleModifier
+    const battleScore = rawScore + averageDifference + battleModifier;
+
+    // 2. 通常フレーム合計スコア算出
+    let previousTotal = 0;
+    const lanes = player.lanes || [];
+
+    for (let i = 0; i < lanes.length; i++) {
+      const l = lanes[i];
+      const diff = l.rawScore - l.averageScore;
+      let frameScore = l.rawScore + diff;
+
+      // 直前以外の過去フレームに対するストライク/スペア加算
+      if (i < lanes.length - 1) {
+        const nextL = lanes[i + 1];
+        const nextDiff = nextL.rawScore - nextL.averageScore;
+        if (l.strike) {
+          frameScore += (nextDiff * 2);
+        } else if (l.spare) {
+          frameScore += (nextDiff * 1);
+        }
+      }
+      previousTotal += frameScore;
+    }
+
+    // 3. 直前フレーム（最終バトルの直前）のストライク/スペアボーナス計算
+    // ※ battleModifier は含めず、今回の averageDifference のみ使用！
+    let previousLaneBonus = 0;
+    const previousLane = lanes.length > 0 ? lanes[lanes.length - 1] : null;
+
+    if (previousLane) {
+      if (previousLane.strike) {
+        previousLaneBonus = averageDifference * 2;
+      } else if (previousLane.spare) {
+        previousLaneBonus = averageDifference * 1;
+      }
+    }
+
+    // 4. 最終合計スコア
+    const finalTotal = previousTotal + previousLaneBonus + battleScore;
+
+    const resultObj = {
+      playerName: player.playerName,
+      songTitle: songTitle,
+      rawScore: rawScore,
+      averageScore: averageScore,
+      averageDifference: averageDifference,
+      previousBestRawScore: previousBestRawScore,
+      bestDiff: bestDiff,
+      battleModifier: battleModifier,
+      battleScore: battleScore,
+      previousLaneBonus: previousLaneBonus,
+      previousTotal: previousTotal,
+      finalTotal: finalTotal
+    };
+
+    sessionState.results.push(resultObj);
+
+    // 音声演出
+    if (bestDiff >= 0) {
+      playSuccessSound();
+    } else {
+      playDownSound();
+    }
+
+    // 5. 結果画面UI生成
+    document.getElementById("res-player-name").textContent = resultObj.playerName;
+    document.getElementById("res-pb-val").textContent = resultObj.previousBestRawScore.toFixed(1);
+    document.getElementById("res-raw-val").textContent = resultObj.rawScore.toFixed(1);
+    document.getElementById("res-avg-diff-val").textContent = (resultObj.averageDifference >= 0 ? "+" : "") + resultObj.averageDifference.toFixed(1);
+
+    const bestDiffElem = document.getElementById("res-best-diff-val");
+    bestDiffElem.textContent = (resultObj.bestDiff >= 0 ? "+" : "") + resultObj.bestDiff.toFixed(1);
+    bestDiffElem.style.color = resultObj.bestDiff >= 0 ? "var(--success-green)" : "var(--danger-red)";
+
+    document.getElementById("res-bonus-formula").textContent = `(${resultObj.bestDiff >= 0 ? '+' : ''}${resultObj.bestDiff.toFixed(1)}) × (${resultObj.averageDifference >= 0 ? '+' : ''}${resultObj.averageDifference.toFixed(1)})`;
+
+    const bonusValElem = document.getElementById("res-bonus-val");
+    bonusValElem.textContent = (resultObj.battleModifier >= 0 ? "+" : "") + resultObj.battleModifier.toFixed(1);
+    bonusValElem.className = "bonus-value " + (resultObj.battleModifier >= 0 ? "plus" : "minus");
+
+    document.getElementById("res-battle-score-val").textContent = resultObj.battleScore.toFixed(1);
+
+    const prevRow = document.getElementById("res-prev-bonus-row");
+    if (resultObj.previousLaneBonus !== 0) {
+      prevRow.style.display = "flex";
+      document.getElementById("res-prev-bonus-val").textContent = "+" + resultObj.previousLaneBonus.toFixed(1);
+    } else {
+      prevRow.style.display = "none";
+    }
+
+    document.getElementById("res-final-total-val").textContent = resultObj.finalTotal.toFixed(1);
+
+    const nextBtn = document.getElementById("btn-next-player");
+    if (sessionState.currentIndex < sessionState.players.length - 1) {
+      nextBtn.textContent = "次のプレイヤーへ";
+    } else {
+      nextBtn.textContent = "全結果を確認する";
+    }
+
+    showView("view-player-result");
+  }
+
+  function proceedNextPlayer() {
+    sessionState.currentIndex++;
+    if (sessionState.currentIndex < sessionState.players.length) {
+      initPlayerView();
+    } else {
+      showFinalSummary();
+    }
+  }
+
+  /* ==========================================
+     7. 全体結果表示 & index.html へ戻る
+     ========================================== */
+  function showFinalSummary() {
+    const tbody = document.getElementById("summary-tbody");
+    tbody.innerHTML = "";
+
+    const sorted = [...sessionState.results].sort((a, b) => b.finalTotal - a.finalTotal);
+
+    sorted.forEach((res, rank) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="${rank === 0 ? 'rank-1' : ''}">${rank + 1}</td>
+        <td style="font-weight: bold;">${escapeHtml(res.playerName)}</td>
+        <td>${res.previousBestRawScore.toFixed(1)}</td>
+        <td>${res.rawScore.toFixed(1)}</td>
+        <td>${res.averageDifference >= 0 ? '+' : ''}${res.averageDifference.toFixed(1)}</td>
+        <td style="color: ${res.bestDiff >= 0 ? 'var(--success-green)' : 'var(--danger-red)'}; font-weight: bold;">
+          ${res.bestDiff >= 0 ? '+' : ''}${res.bestDiff.toFixed(1)}
+        </td>
+        <td style="font-weight: bold; color: ${res.battleModifier >= 0 ? 'var(--success-green)' : 'var(--danger-red)'};">
+          ${res.battleModifier >= 0 ? '+' : ''}${res.battleModifier.toFixed(1)}
+        </td>
+        <td style="font-weight: 900; color: var(--warning-yellow); font-size: 1.05rem;">${res.finalTotal.toFixed(1)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    showView("view-final-summary");
+  }
+
+  function finishAllBattlesAndReturn() {
+    // BATTLE_RESULT_KEY への書き出し仕様を満たす
+    const exportData = {
+      stage: "過去の自分を超えろ",
+      results: sessionState.results.map(r => ({
+        stage: "過去の自分を超えろ",
+        playerName: r.playerName,
+        songTitle: r.songTitle,
+        rawScore: r.rawScore,
+        averageScore: r.averageScore,
+        averageDifference: r.averageDifference,
+        previousBestRawScore: r.previousBestRawScore,
+        battleModifier: r.battleModifier,
+        battleScore: r.battleScore,
+        previousLaneBonus: r.previousLaneBonus,
+        finalTotal: r.finalTotal
+      })),
+      timestamp: Date.now()
+    };
+
+    localStorage.setItem(BATTLE_RESULT_KEY, JSON.stringify(exportData));
+
+    // メインゲーム(index.html)側データへの同期反映（オプション安全処理）
+    try {
+      const mainDataRaw = localStorage.getItem(MAIN_GAME_DATA_KEY);
+      if (mainDataRaw) {
+        const mainData = JSON.parse(mainDataRaw);
+        sessionState.results.forEach((res, idx) => {
+          if (mainData.scores && mainData.scores[idx]) {
+            const lastSongIdx = mainData.scores[idx].length - 1;
+            if (lastSongIdx >= 0) {
+              mainData.scores[idx][lastSongIdx] = {
+                rawScore: res.rawScore,
+                avgScore: res.averageScore,
+                title: res.songTitle,
+                condition: "【過去の自分を超えろ】"
+              };
+            }
+          }
+        });
+        localStorage.setItem(MAIN_GAME_DATA_KEY, JSON.stringify(mainData));
+      }
+    } catch (e) {
+      console.warn("メインゲーム同期警告:", e);
+    }
+
+    alert("「過去の自分を超えろ」バトルの結果を確定しました。メイン画面に戻ります。");
+    window.location.href = "index.html";
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+</script>
+</body>
+</html>
