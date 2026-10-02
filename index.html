@@ -2459,17 +2459,47 @@
   }
 
   function exportPDF() {
+  // 最新のスコア内訳を生成
+  openBreakdownModal();
+
+  setTimeout(() => {
     const element = document.getElementById("breakdown-body");
-    if (!element) return;
+
+    if (!element) {
+      alert("PDF出力用のデータが見つかりません。");
+      return;
+    }
+
+    if (typeof html2pdf === "undefined") {
+      alert("PDF出力ライブラリを読み込めていません。");
+      console.error("html2pdf is not defined");
+      return;
+    }
+
     const opt = {
-      margin:       0.5,
-      filename:     'karaoke_bowling_result.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      margin: 0.5,
+      filename: "karaoke_bowling_result.pdf",
+      image: {
+        type: "jpeg",
+        quality: 0.98
+      },
+      html2canvas: {
+        scale: 2,
+        useCORS: true
+      },
+      jsPDF: {
+        unit: "in",
+        format: "letter",
+        orientation: "portrait"
+      }
     };
-    html2pdf().set(opt).from(element).save();
-  }
+
+    html2pdf()
+      .set(opt)
+      .from(element)
+      .save();
+  }, 100);
+}
 
   /* ------------------------------------------
      バトルステージ連携処理
